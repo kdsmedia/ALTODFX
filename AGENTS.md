@@ -28,6 +28,25 @@ plus LADSPA/LV2 plugin support).
   no premium gating). The `INTERNET` and `BILLING` permissions were removed.
   Do not re-add billing or network access without an explicit request.
 
+## Audio routing (headset jack only, never USB)
+
+- Input and output are routed through the **wired headset jack (3.5 mm)** and
+  are deliberately **never** routed through a USB audio device.
+- `MainActivity.applySettings()` / `applyInputDevice()` / `applyOutputDevice()`
+  resolve the device and call the native
+  `AudioEngine.setRecordingDeviceId(int)` / `setPlaybackDeviceId(int)` using
+  `AudioDeviceInfo.getId()`.
+- `isUsbAudioDevice()` excludes `TYPE_USB_DEVICE`, `TYPE_USB_ACCESSORY`, and
+  `TYPE_USB_HEADSET`. `findDevice()` never returns a USB device.
+- Preference values for `input` and `output` are `auto`, `headset`, `phone`
+  (see `arrays.xml`). `auto` prefers the headset jack and falls back to the
+  built-in mic/speaker. A device id of `0` means "leave the engine default".
+- A `HeadsetReceiver` on `AudioManager.ACTION_HEADSET_PLUG` re-applies routing
+  when the jack is plugged or unplugged.
+- Note: on many phones the headset jack is output-only (no headset mic), so the
+  headset option applies to output; the input follows it only when the phone
+  exposes a wired-headset input (TRRS with mic).
+
 ## Signing (release)
 
 - `app/build.gradle` reads signing values from `keystore.properties`

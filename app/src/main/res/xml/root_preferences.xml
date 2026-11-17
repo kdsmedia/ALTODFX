@@ -11,12 +11,16 @@
         <ListPreference
             android:title="Input Device"
             android:key="input"
-            android:defaultValue="default"/>
+            android:defaultValue="auto"
+            android:entries="@array/audio_input_entries"
+            android:entryValues="@array/audio_input_values"/>
 
         <ListPreference
             android:title="Output Device"
             android:key="output"
-            android:defaultValue="default"/>
+            android:defaultValue="auto"
+            android:entries="@array/audio_output_entries"
+            android:entryValues="@array/audio_output_values"/>
     </PreferenceCategory>
 
     <PreferenceCategory

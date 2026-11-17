@@ -6,13 +6,17 @@ import static android.os.Environment.DIRECTORY_RECORDINGS;
 import static android.os.Environment.getExternalStorageDirectory;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.AudioDeviceInfo;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
@@ -114,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter<String> adapter ;
     static boolean prepared = false ;
     static SharedPreferences defaultSharedPreferences ;
+    private HeadsetReceiver headsetReceiver ;
 
     static {
         System.loadLibrary("amprack");
@@ -742,6 +747,40 @@ public class MainActivity extends AppCompatActivity {
         mediaPlayer.stop();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        headsetReceiver = new HeadsetReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(AudioManager.ACTION_HEADSET_PLUG);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(headsetReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(headsetReceiver, filter);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (headsetReceiver != null) {
+            unregisterReceiver(headsetReceiver);
+            headsetReceiver = null;
+        }
+        super.onDestroy();
+    }
+
+    // Re-applies the headset routing whenever the headphone jack is plugged or
+    // unplugged so audio always follows the 3.5 mm hole.
+    private static class HeadsetReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (AudioManager.ACTION_HEADSET_PLUG.equals(intent.getAction())) {
+                applySettings();
+            }
+        }
+    }
+
     public void renameFile (String oldName, int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = mainActivity.getLayoutInflater();
@@ -792,26 +831,125 @@ public class MainActivity extends AppCompatActivity {
         builder.show();
     }
 
+    // Audio is routed through the wired headset jack (3.5 mm) by default and is
+    // never routed through a USB audio device, so the app runs off the headset
+    // hole only.
     public static void applySettings () {
-        String input = defaultSharedPreferences.getString("input", "-1");
-        String output = defaultSharedPreferences.getString("output", "-1");
-        Log.d(TAG, "applyPreferences: [devices] " + String.format("input: %s, output: %s", input, output));
-
-        Log.d(TAG, "applyPreferencesDevices: " + String.format(
-                "[preferences] playback device: %s, recording device: %s",
-                output, input
-        ));
+        String input = defaultSharedPreferences.getString("input", "auto");
+        String output = defaultSharedPreferences.getString("output", "auto");
+        Log.d(TAG, String.format("[devices] input preference: %s, output preference: %s", input, output));
 
         try {
-            if (!input.equals("default") && ! input.equals("-1"))
-                AudioEngine.setRecordingDeviceId(new Integer(input));
-            if (!output.equals("default") && ! input.equals("-1"))
-                AudioEngine.setPlaybackDeviceId(new Integer(output));
-
+            int inputDevice = resolveInputDevice(input);
+            int outputDevice = resolveOutputDevice(output);
+            if (inputDevice > 0) {
+                AudioEngine.setRecordingDeviceId(inputDevice);
+            }
+            if (outputDevice > 0) {
+                AudioEngine.setPlaybackDeviceId(outputDevice);
+            }
             AudioEngine.setLamePreset(Integer.parseInt(defaultSharedPreferences.getString("lame_preset", "1001")));
         } catch (NumberFormatException e) {
             Log.e(TAG, "applySettings: ", e);
         }
+    }
+
+    public static void applyInputDevice (String preference) {
+        int device = resolveInputDevice(preference);
+        if (device > 0) {
+            AudioEngine.setRecordingDeviceId(device);
+        }
+    }
+
+    public static void applyOutputDevice (String preference) {
+        int device = resolveOutputDevice(preference);
+        if (device > 0) {
+            AudioEngine.setPlaybackDeviceId(device);
+        }
+    }
+
+    private static boolean isUsbAudioDevice (AudioDeviceInfo device) {
+        int type = device.getType();
+        return type == AudioDeviceInfo.TYPE_USB_DEVICE
+                || type == AudioDeviceInfo.TYPE_USB_ACCESSORY
+                || type == AudioDeviceInfo.TYPE_USB_HEADSET;
+    }
+
+    private static AudioDeviceInfo findDevice (AudioManager manager, boolean input, int [] types) {
+        AudioDeviceInfo[] devices = manager.getDevices(
+                input ? AudioManager.GET_DEVICES_INPUTS : AudioManager.GET_DEVICES_OUTPUTS);
+
+        for (int type : types) {
+            for (AudioDeviceInfo device : devices) {
+                if (device.getType() == type && ! isUsbAudioDevice(device)) {
+                    return device;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static int resolveInputDevice (String preference) {
+        AudioManager manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        if (manager == null) {
+            return 0;
+        }
+
+        if ("phone".equals(preference)) {
+            AudioDeviceInfo device = findDevice(manager, true, new int [] {AudioDeviceInfo.TYPE_BUILTIN_MIC});
+            return device != null ? device.getId() : 0;
+        }
+
+        AudioDeviceInfo headset = findDevice(manager, true, new int [] {
+                AudioDeviceInfo.TYPE_WIRED_HEADSET,
+                AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+                AudioDeviceInfo.TYPE_AUX_LINE
+        });
+
+        if (headset != null) {
+            return headset.getId();
+        }
+
+        if ("headset".equals(preference)) {
+            Toast.makeText(context, "No headset detected. Connect a wired headset to the headphone jack.", Toast.LENGTH_LONG).show();
+            return 0;
+        }
+
+        // Auto: fall back to the built-in microphone, never a USB device.
+        AudioDeviceInfo builtIn = findDevice(manager, true, new int [] {AudioDeviceInfo.TYPE_BUILTIN_MIC});
+        return builtIn != null ? builtIn.getId() : 0;
+    }
+
+    private static int resolveOutputDevice (String preference) {
+        AudioManager manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        if (manager == null) {
+            return 0;
+        }
+
+        if ("phone".equals(preference)) {
+            AudioDeviceInfo device = findDevice(manager, false, new int [] {AudioDeviceInfo.TYPE_BUILTIN_SPEAKER});
+            return device != null ? device.getId() : 0;
+        }
+
+        AudioDeviceInfo headset = findDevice(manager, false, new int [] {
+                AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+                AudioDeviceInfo.TYPE_WIRED_HEADSET,
+                AudioDeviceInfo.TYPE_AUX_LINE
+        });
+
+        if (headset != null) {
+            return headset.getId();
+        }
+
+        if ("headset".equals(preference)) {
+            Toast.makeText(context, "No headset detected. Connect headphones to the headphone jack.", Toast.LENGTH_LONG).show();
+            return 0;
+        }
+
+        // Auto: fall back to the built-in speaker, never a USB device.
+        AudioDeviceInfo builtIn = findDevice(manager, false, new int [] {AudioDeviceInfo.TYPE_BUILTIN_SPEAKER});
+        return builtIn != null ? builtIn.getId() : 0;
     }
 
     public static String getPreset1 () {
