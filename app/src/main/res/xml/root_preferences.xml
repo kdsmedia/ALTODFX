@@ -33,7 +33,7 @@
         <ListPreference
             android:title="Noise gate threshold"
             android:key="noise_gate"
-            android:defaultValue="0.0035"
+            android:defaultValue="0.008"
             android:entries="@array/noise_gate_entries"
             android:entryValues="@array/noise_gate_values"
             android:summary="Higher = more aggressive noise removal"/>

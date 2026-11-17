@@ -1,119 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+    android:orientation="vertical"
+    android:padding="12dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/rounded_corners_transparent"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:gravity="center"
-        android:id="@+id/l1"
-        android:layout_margin="10dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent">
-        <ToggleButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textOn="Off"
-            android:scaleX="1.2"
-            android:fontFamily="@font/gruppo"
-            android:scaleY="1.2"
-            android:layout_gravity="start"
-            android:id="@+id/preview"
-            android:textOff="On"
-            android:drawableLeft="@drawable/baseline_power_settings_new_24"/>
+        android:padding="10dp">
 
         <ImageView
-            android:background="@drawable/altodfx"
-            android:layout_width="50dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:layout_height="50dp"
-            />
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/altodfx" />
+
         <LinearLayout
-            android:visibility="gone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_margin="10dp">
-
-            <ToggleButton
-                android:layout_width="50dp"
-                android:layout_height="wrap_content"
-                android:textOff=""
-                android:textOn=""
-                android:id="@+id/pause"
-                android:background="@android:color/transparent"
-                android:drawableLeft="@drawable/pause"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:enabled="false"
-                android:fontFamily="@font/montserrat"
-                android:text="Pause"
-                android:layout_gravity="center"
-                android:textAlignment="center"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/l2"
-        app:layout_constraintBottom_toTopOf="@id/l3"
-        app:layout_constraintTop_toBottomOf="@id/l1"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:orientation="horizontal">
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"/>
-
-    </LinearLayout>
-    <LinearLayout
-        app:layout_constraintTop_toBottomOf="@id/l2"
-        app:layout_constraintBottom_toTopOf="@id/recycler"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/l3"
-        android:padding="10dp"
-        android:layout_margin="15dp"
-        android:background="@drawable/rounded_corners_transparent"
-        android:orientation="horizontal">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/presets_label"/>
-
-        <Spinner
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:id="@+id/presets"/>
-        <Button
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_margin="5dp"
-            android:background="@drawable/baseline_save_24"
-            android:id="@+id/add_preset"/>
-        <Button
-            android:layout_width="30dp"
-            android:id="@+id/delete_preset"
-            android:layout_height="30dp"
-            android:layout_margin="5dp"
-            android:background="@drawable/baseline_delete_forever_24"/>
-    </LinearLayout>
-    <androidx.recyclerview.widget.RecyclerView
-        android:layout_width="match_parent"
-        app:layout_constraintTop_toBottomOf="@id/l3"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_height="wrap_content"
-        app:layout_constrainedHeight="true"
-        android:layout_margin="10dp"
-        android:id="@+id/recycler"/>
+            android:orientation="vertical">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/gruppo"
+                android:text="@string/app_name"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/status_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/montserrat"
+                android:text="@string/effect_off"
+                android:textColor="#FFB0BEC5"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/l3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/rounded_corners_transparent"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/montserrat"
+            android:text="@string/presets_label"
+            android:textColor="#FFFFFF" />
+
+        <Spinner
+            android:id="@+id/presets"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/add_preset"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_margin="5dp"
+            android:background="@drawable/baseline_save_24" />
+
+        <Button
+            android:id="@+id/delete_preset"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_margin="5dp"
+            android:background="@drawable/baseline_delete_forever_24" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

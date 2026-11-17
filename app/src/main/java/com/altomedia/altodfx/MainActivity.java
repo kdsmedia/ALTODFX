@@ -94,6 +94,15 @@ public class MainActivity extends AppCompatActivity {
     static boolean prepared = false ;
     static SharedPreferences defaultSharedPreferences ;
     private HeadsetReceiver headsetReceiver ;
+    private TextView statusText ;
+    private View homeContainer, tunerContainer, settingsContainer ;
+    private android.os.Handler tunerHandler ;
+    private boolean tunerVisible = false ;
+    private TextView tunerNote, tunerCents, tunerFreq ;
+    private TunerNeedle tunerNeedle ;
+    private static final String [] NOTE_NAMES = {
+            "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
+    } ;
 
     static {
         System.loadLibrary("amprack");
@@ -128,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         ToggleButton preview = findViewById(R.id.preview);
+        statusText = findViewById(R.id.status_text);
 
         Button deletePreset = findViewById(R.id.delete_preset);
         deletePreset.setOnClickListener(new View.OnClickListener() {
@@ -165,24 +175,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ToggleButton pause = findViewById(R.id.pause);
-        pause.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                buttonView.setCompoundDrawables(null, null, null, null);
-                if (isChecked) {
-                    buttonView.setButtonDrawable(getResources().getDrawable(R.drawable.play));
-                    AudioEngine.bypass(true);
-                    AudioEngine.setInputVolume(0f);
-                } else {
-                    buttonView.setButtonDrawable(getResources().getDrawable(R.drawable.pause));
-                    AudioEngine.bypass(false);
-                    AudioEngine.setInputVolume(1f);
-                }
-
-            }
-        });
-
         setSupportActionBar(binding.toolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -196,15 +188,6 @@ public class MainActivity extends AppCompatActivity {
 //                Log.d(TAG, String.format ("[get preset]: %s", getPreset()));
 //                loadPreset(getPreset());
                 AudioEngine.printActiveChain();
-            }
-        });
-
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAnchorView(R.id.fab)
-                        .setAction("Action", null).show();
             }
         });
 
@@ -305,6 +288,123 @@ public class MainActivity extends AppCompatActivity {
 
         loadPlugins();
         applySettings();
+
+        setupBottomNavigation();
+    }
+
+    // Bottom navigation: Home (rack), Tuning (pitch meter) and Setting.
+    private void setupBottomNavigation () {
+        homeContainer = findViewById(R.id.home_container);
+        tunerContainer = findViewById(R.id.tuner_container);
+        settingsContainer = findViewById(R.id.settings_container);
+
+        tunerNote = findViewById(R.id.tuner_note);
+        tunerCents = findViewById(R.id.tuner_cents);
+        tunerFreq = findViewById(R.id.tuner_freq);
+        tunerNeedle = findViewById(R.id.tuner_needle);
+        tunerHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+
+        if (settingsContainer != null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.settings_container, new SettingsActivity.SettingsFragment())
+                    .commit();
+        }
+
+        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav =
+                findViewById(R.id.bottom_nav);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_tuning) {
+                showScreen(2);
+            } else if (id == R.id.nav_settings) {
+                showScreen(3);
+            } else {
+                showScreen(1);
+            }
+            return true;
+        });
+
+        showScreen(1);
+    }
+
+    private void showScreen (int screen) {
+        if (homeContainer != null)
+            homeContainer.setVisibility(screen == 1 ? View.VISIBLE : View.GONE);
+        if (tunerContainer != null)
+            tunerContainer.setVisibility(screen == 2 ? View.VISIBLE : View.GONE);
+        if (settingsContainer != null)
+            settingsContainer.setVisibility(screen == 3 ? View.VISIBLE : View.GONE);
+
+        boolean tuning = screen == 2;
+        if (tuning != tunerVisible) {
+            tunerVisible = tuning;
+            AudioEngine.setTunerEnabled(tuning);
+            if (tuning) {
+                tunerHandler.post(tunerRunnable);
+            } else {
+                tunerHandler.removeCallbacks(tunerRunnable);
+            }
+        }
+    }
+
+    private final Runnable tunerRunnable = new Runnable() {
+        @Override
+        public void run () {
+            updateTunerDisplay();
+            tunerHandler.postDelayed(this, 100);
+        }
+    };
+
+    private void updateTunerDisplay () {
+        if (tunerNote == null) return;
+
+        // The tuner analyses the captured input, so it only works while the
+        // effect engine is running.
+        if (! running) {
+            tunerNote.setText("--");
+            tunerCents.setText(getString(R.string.effect_off));
+            tunerFreq.setText("-- Hz");
+            tunerNeedle.setActive(false);
+            tunerNeedle.setCents(0f);
+            return;
+        }
+
+        float [] data = AudioEngine.getTunerData();
+        float freq = data != null && data.length > 0 ? data[0] : 0f;
+        float cents = data != null && data.length > 2 ? data[2] : 0f;
+
+        if (freq <= 0f) {
+            tunerNote.setText("--");
+            tunerCents.setText(getString(R.string.tuner_hint));
+            tunerFreq.setText("-- Hz");
+            tunerNeedle.setActive(false);
+            tunerNeedle.setCents(0f);
+            return;
+        }
+
+        // Convert to the nearest note name and octave.
+        int midi = Math.round(69f + 12f * (float) (Math.log(freq / 440.0) / Math.log(2.0)));
+        int noteIndex = ((midi % 12) + 12) % 12;
+        int octave = midi / 12 - 1;
+        tunerNote.setText(NOTE_NAMES[noteIndex] + octave);
+        tunerFreq.setText(String.format(java.util.Locale.US, "%.1f Hz", freq));
+
+        tunerNeedle.setActive(true);
+        tunerNeedle.setCents(cents);
+        if (Math.abs(cents) < 5f)
+            tunerCents.setText(getString(R.string.tuner_in_tune));
+        else if (cents > 0)
+            tunerCents.setText(String.format(java.util.Locale.US, "%s +%.0f\u00A2",
+                    getString(R.string.tuner_sharp), cents));
+        else
+            tunerCents.setText(String.format(java.util.Locale.US, "%s %.0f\u00A2",
+                    getString(R.string.tuner_flat), cents));
+    }
+
+    private void updateStatus (boolean on) {
+        if (statusText != null)
+            statusText.setText(on ? R.string.effect_on : R.string.effect_off);
     }
 
     @Override
@@ -476,7 +576,11 @@ public class MainActivity extends AppCompatActivity {
                     addPluginToRack (Integer.parseInt(key));
                     pluginIDs.add(Integer.parseInt(key));
 
-//                    AudioEngine.togglePlugin(index, false);
+                    // Load the whole catalogue into the rack but start with every
+                    // effect bypassed. Running all of them at once stacks every
+                    // gain stage in series, which clips the DAC and is heard as a
+                    // loud buzz/hiss. The user enables what they need.
+                    AudioEngine.togglePlugin(index, false);
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -662,7 +766,7 @@ public class MainActivity extends AppCompatActivity {
     // interface tends to hum and buzz.
     public static void applyInputConditioner () {
         boolean enabled = defaultSharedPreferences.getBoolean("input_clean", true);
-        float gate = Float.parseFloat(defaultSharedPreferences.getString("noise_gate", "0.0035"));
+        float gate = Float.parseFloat(defaultSharedPreferences.getString("noise_gate", "0.008"));
         float highpass = Float.parseFloat(defaultSharedPreferences.getString("input_highpass", "80"));
         AudioEngine.setInputConditionerEnabled(enabled);
         AudioEngine.setNoiseGateThreshold(gate);

@@ -19,6 +19,7 @@
 
 #include <dlfcn.h>
 #include <cmath>
+#include <atomic>
 #include "ladspa.h"
 #include "FullDuplexStream.h"
 #include "Meter.h"
@@ -43,12 +44,15 @@ public:
         mHighpassAlpha = rc / (rc + dt) ;
         mAttack = std::exp (-1.0f / (0.002f * sampleRate)) ;
         mRelease = std::exp (-1.0f / (0.150f * sampleRate)) ;
+        mOpenStep = 1.0f / (0.001f * sampleRate) ;
+        mCloseStep = 1.0f / (0.050f * sampleRate) ;
     }
 
     inline void reset () {
         mX1 = mY1 = 0.0f ;
         mEnv = 0.0f ;
         mGain = 1.0f ;
+        mHoldCounter = 0 ;
     }
 
     inline float process (float x) {
@@ -66,12 +70,22 @@ public:
         else
             mEnv = mRelease * mEnv + (1.0f - mRelease) * rectified ;
 
-        // Gate with a short hold so it does not chatter on decaying notes.
-        float target = mEnv > gateThreshold ? 1.0f : 0.0f ;
-        if (target > mGain)
-            mGain += 0.01f ;           // fast open
-        else
-            mGain -= 0.0002f ;         // slow close
+        // Hysteresis: open above the threshold, only close once the envelope
+        // falls below half of it. Without the second level the gate chatters on
+        // a decaying note and chops the tail of every chord.
+        const float closeThreshold = gateThreshold * 0.5f ;
+        if (mEnv > gateThreshold) {
+            mHoldCounter = (int) (0.05f * sampleRate) ; // 50 ms hold
+        } else if (mHoldCounter > 0) {
+            mHoldCounter -- ;
+        }
+
+        bool open = (mEnv > gateThreshold) || (mHoldCounter > 0 && mEnv > closeThreshold) ;
+        if (open) {
+            mGain += mOpenStep ;           // fast open (~1 ms)
+        } else {
+            mGain -= mCloseStep ;          // slow close (~50 ms)
+        }
         if (mGain > 1.0f) mGain = 1.0f ;
         if (mGain < 0.0f) mGain = 0.0f ;
 
@@ -85,13 +99,161 @@ private:
     float mX1 = 0.0f, mY1 = 0.0f ;
     float mEnv = 0.0f ;
     float mGain = 1.0f ;
+    int   mHoldCounter = 0 ;
+    // Per-sample ramps chosen for a 48 kHz rate; scaled at setSampleRate time.
+    float mOpenStep = 1.0f / (0.001f * 48000.0f) ;
+    float mCloseStep = 1.0f / (0.050f * 48000.0f) ;
 };
+
+// Final safety stage on the output. The effect chain can easily sum several
+// gain stages and clip the DAC hard, which sounds like harsh buzzing; a soft
+// peak limiter keeps the level musical instead of crackling.
+class OutputLimiter {
+public:
+    bool enabled = true ;
+    float ceiling = 0.95f ;
+
+    inline float process (float x) {
+        if (! enabled) return x ;
+        const float threshold = ceiling * 0.7f ;
+        float a = std::fabs (x) ;
+        if (a <= threshold) return x ;
+        // Soft knee: smoothly compress everything above the threshold toward the
+        // ceiling instead of hard-clipping.
+        float over = a - threshold ;
+        float range = ceiling - threshold ;
+        float compressed = threshold + range * (over / (over + range)) ;
+        return (x < 0.0f ? -compressed : compressed) ;
+    }
+};
+
+// Pitch capture for the tuner. The audio callback appends the conditioned
+// input into a ring buffer; the UI thread polls it and runs autocorrelation.
+// This is intentionally independent of Meter, whose tuner path has mismatched
+// JNI signatures and never worked.
+class AudioTuner {
+public:
+    static const int SIZE = 8192 ;   // power of two
+    static const int WINDOW = 2048 ; // samples analysed per reading
+
+    std::atomic<bool> enabled { false } ;
+    std::atomic<int>  writeIndex { 0 } ;
+
+    inline void push (float sample) {
+        if (! enabled.load (std::memory_order_relaxed)) return ;
+        int i = writeIndex.load (std::memory_order_relaxed) ;
+        mBuffer [i & (SIZE - 1)] = sample ;
+        writeIndex.store (i + 1, std::memory_order_relaxed) ;
+    }
+
+    // Copies the most recent `count` samples, oldest first, into `out`.
+    void snapshot (float * out, int count) const {
+        int w = writeIndex.load (std::memory_order_relaxed) ;
+        int start = w - count ;
+        for (int i = 0 ; i < count ; i ++)
+            out [i] = mBuffer [(start + i) & (SIZE - 1)] ;
+    }
+
+private:
+    float mBuffer [SIZE] = { 0 } ;
+} ;
+
+// Autocorrelation pitch estimate. Returns the frequency in Hz, or 0 when the
+// signal is too quiet to be a note. `outRms` receives the signal level and
+// `outCents` the deviation from the nearest semitone.
+inline float detectPitch (const float * x, int n, float sampleRate,
+                          float * outRms, float * outCents) {
+    if (outRms) *outRms = 0.0f ;
+    if (outCents) *outCents = 0.0f ;
+
+    float mean = 0.0f ;
+    for (int i = 0 ; i < n ; i ++) mean += x [i] ;
+    mean /= (float) n ;
+
+    float rms = 0.0f ;
+    for (int i = 0 ; i < n ; i ++) {
+        float v = x [i] - mean ;
+        rms += v * v ;
+    }
+    rms = std::sqrt (rms / (float) n) ;
+    if (outRms) *outRms = rms ;
+    if (rms < 0.002f) return 0.0f ;
+
+    int minLag = (int) (sampleRate / 1200.0f) ;
+    int maxLag = (int) (sampleRate / 60.0f) ;
+    if (maxLag > n / 2) maxLag = n / 2 ;
+    if (minLag < 1) minLag = 1 ;
+    if (maxLag <= minLag) return 0.0f ;
+
+    const int MAX_LAG = 4096 ;
+    float nsdf [MAX_LAG] ;
+    if (maxLag >= MAX_LAG) maxLag = MAX_LAG - 1 ;
+
+    // Normalised square difference (McLeod): a value near 1 marks a period.
+    float globalMax = 0.0f ;
+    for (int lag = minLag ; lag <= maxLag ; lag ++) {
+        float ac = 0.0f, m0 = 0.0f, ml = 0.0f ;
+        for (int i = 0 ; i < n - lag ; i ++) {
+            float a = x [i] - mean ;
+            float b = x [i + lag] - mean ;
+            ac += a * b ;
+            m0 += a * a ;
+            ml += b * b ;
+        }
+        float denom = m0 + ml ;
+        float v = denom > 1e-12f ? 2.0f * ac / denom : 0.0f ;
+        nsdf [lag] = v ;
+        if (v > globalMax) globalMax = v ;
+    }
+    if (globalMax <= 0.0f) return 0.0f ;
+
+    // The fundamental is the first prominent peak, not the global maximum:
+    // picking the maximum often selects a harmonic multiple (octave error).
+    int bestLag = -1 ;
+    float thresh = 0.80f * globalMax ;
+    for (int lag = minLag + 1 ; lag < maxLag ; lag ++) {
+        if (nsdf [lag] > nsdf [lag - 1] && nsdf [lag] >= nsdf [lag + 1] &&
+            nsdf [lag] >= thresh) {
+            bestLag = lag ;
+            break ;
+        }
+    }
+    if (bestLag < 0) {
+        for (int lag = minLag ; lag <= maxLag ; lag ++)
+            if (nsdf [lag] >= globalMax) { bestLag = lag ; break ; }
+    }
+    if (bestLag <= 0) return 0.0f ;
+
+    // Parabolic interpolation around the peak for sub-sample accuracy.
+    float lagF = (float) bestLag ;
+    if (bestLag > minLag && bestLag < maxLag) {
+        float y0 = nsdf [bestLag - 1] ;
+        float y1 = nsdf [bestLag] ;
+        float y2 = nsdf [bestLag + 1] ;
+        float denom = 2.0f * (2.0f * y1 - y0 - y2) ;
+        if (std::fabs (denom) > 1e-9f)
+            lagF = (float) bestLag + (y2 - y0) / denom ;
+    }
+
+    if (lagF <= 0.0f) return 0.0f ;
+    float freq = sampleRate / lagF ;
+    if (freq < 40.0f || freq > 1500.0f) return 0.0f ;
+
+    if (outCents) {
+        float midi = 69.0f + 12.0f * std::log2 (freq / 440.0f) ;
+        float nearest = std::round (midi) ;
+        *outCents = (midi - nearest) * 100.0f ;
+    }
+    return freq ;
+}
 
 class FullDuplexPass : public FullDuplexStream {
     //| TODO: Limit number of plugins active in free version?
 public:
     #define MAX_PLUGINS 32 // room for a full professional effect rack
     InputConditioner inputConditioner ;
+    OutputLimiter outputLimiter ;
+    AudioTuner tuner ;
     float inputVolume = 1.0 ;
     float outputVolume = 1.0 ;
     bool meterEnabled = true ;
@@ -147,6 +309,7 @@ public:
 //        float inSamples [samplesToProcess];
         for (int i = 0 ; i < samplesToProcess ; i ++) {
             raw [i] = inSamples [i] = inputConditioner.process (inputFloats [i]) * inputVolume ;
+            tuner.push (inSamples [i]) ;
         }
 
 //        if (meterEnabled) {
@@ -167,6 +330,7 @@ public:
 
         for (int32_t i = 0; i < samplesToProcess; i++) {
             inSamples [i] = inSamples [i]  * outputVolume; // do some arbitrary processing
+            inSamples [i] = outputLimiter.process (inSamples [i]) ;
             *outputFloats++ = inSamples [i];
         }
 

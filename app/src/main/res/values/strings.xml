@@ -3,6 +3,17 @@
     <string name="action_settings">Settings</string>
     <string name="presets_label">Presets</string>
     <string name="about_title">About ALTODFX</string>
+    <string name="effect_power">Effect on/off</string>
+    <string name="effect_on">Effect ON</string>
+    <string name="effect_off">Effect OFF — tap the power button</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_tuning">Tuning</string>
+    <string name="nav_settings">Setting</string>
+    <string name="tuner_no_signal">Play a note</string>
+    <string name="tuner_hint">Pluck a string and watch the needle</string>
+    <string name="tuner_in_tune">In tune</string>
+    <string name="tuner_sharp">Sharp</string>
+    <string name="tuner_flat">Flat</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>

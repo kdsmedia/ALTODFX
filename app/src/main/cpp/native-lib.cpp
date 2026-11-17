@@ -791,6 +791,31 @@ Java_com_shajikhan_ladspa_amprack_AudioEngine_setTunerEnabled(JNIEnv *env, jclas
     }
 
     engine -> meter -> tunerEnabled = enabled;
+    engine -> mFullDuplexPass . tuner . enabled . store (enabled) ;
+}
+
+// Fills `out` with {frequencyHz, rms, cents} from the most recent input.
+extern "C"
+JNIEXPORT jfloatArray JNICALL
+Java_com_shajikhan_ladspa_amprack_AudioEngine_getTunerData(JNIEnv *env, jclass clazz) {
+    jfloatArray result = env->NewFloatArray(3);
+    float values [3] = { 0.0f, 0.0f, 0.0f } ;
+    if (engine == NULL) {
+        env->SetFloatArrayRegion(result, 0, 3, values);
+        return result;
+    }
+
+    const int n = AudioTuner::WINDOW ;
+    static float window [AudioTuner::WINDOW] ;
+    engine->mFullDuplexPass.tuner.snapshot(window, n);
+
+    float rms = 0.0f, cents = 0.0f ;
+    float freq = detectPitch(window, n, (float) engine->mSampleRate, &rms, &cents);
+    values [0] = freq ;
+    values [1] = rms ;
+    values [2] = cents ;
+    env->SetFloatArrayRegion(result, 0, 3, values);
+    return result;
 }
 
 extern "C"

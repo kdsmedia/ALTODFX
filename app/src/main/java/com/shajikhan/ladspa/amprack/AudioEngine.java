@@ -59,6 +59,8 @@ public class AudioEngine {
     public static native void debugInfo ();
     public static native boolean getTunerEnabled () ;
     public static native void setTunerEnabled (boolean enabled) ;
+    // Returns {frequencyHz, rms, centsFromNearestNote}; frequency 0 = no note.
+    public static native float [] getTunerData () ;
 
     public static native boolean create() ;
     public static native boolean wasLowLatency ();
