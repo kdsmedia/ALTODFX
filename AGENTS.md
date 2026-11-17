@@ -99,6 +99,42 @@ not to file recording.
   `MainActivity.applyInputConditioner()` using the `input_clean`, `noise_gate`
   and `input_highpass` preferences.
 
+## Output limiter
+
+- The effect chain can sum several gain stages and clip the DAC hard, which is
+  heard as harsh buzzing. `class OutputLimiter` in `FullDuplexPass.h` is a
+  soft-knee peak limiter applied to the final output in `onBothStreamsReady`
+  (ceiling 0.95, knee at 0.7 x ceiling). Keep it last in the output path.
+- The noise gate in `InputConditioner` uses hysteresis (opens above
+  `gateThreshold`, only closes below half of it) plus a 50 ms hold. A single
+  threshold chatters on a decaying note and chops the tail of every chord.
+
+## Tuner
+
+- The tuner captures the conditioned input in `class AudioTuner`
+  (`FullDuplexPass.h`): a lock-free ring buffer the audio callback writes and
+  the UI thread reads. It is independent of `Meter`, whose tuner path has
+  mismatched JNI signatures and never worked.
+- `detectPitch()` is an NSDF (McLeod) detector that picks the *first* prominent
+  peak, not the global maximum: the global maximum is often a harmonic multiple
+  and reads an octave too low. Validated against synthetic tones, harmonic-rich
+  guitar-like waveforms and detuned notes.
+- JNI: `AudioEngine.getTunerData()` returns `{frequencyHz, rms, cents}`;
+  `frequencyHz == 0` means no note. `setTunerEnabled()` also gates the ring
+  buffer so capture costs nothing when the tuner screen is closed.
+
+## UI structure
+
+- `activity_main.xml`: toolbar with the app name and the effect ON/OFF
+  `ToggleButton` (`@id/preview`, styled by `drawable/power_button_bg.xml`)
+  pinned to the **top-right**, a `FrameLayout` holding three screens, and a
+  `BottomNavigationView` (`@menu/bottom_nav_menu`) with Home / Tuning / Setting.
+- `content_main.xml` is the Home screen (rack + preset spinner). The Tuning
+  screen is `fragment_tuner.xml` with the custom `TunerNeedle` gauge. The
+  Setting screen hosts `SettingsActivity.SettingsFragment`.
+- `MainActivity.showScreen()` switches screens and starts/stops the tuner
+  polling loop; the effect engine must be running for the tuner to see input.
+
 ## Effect rack and presets
 
 - The active rack is defined by `app/src/main/assets/voice.json` (plugin ID ->
@@ -108,6 +144,11 @@ not to file recording.
 - The rack currently has 19 slots (compressor, wah, drives, amp, cab, EQ,
   modulation, delay, reverb, normalizer). `MAX_PLUGINS` in `FullDuplexPass.h`
   is 32; keep the rack within that.
+- `MainActivity.loadPlugins()` loads every slot but calls
+  `AudioEngine.togglePlugin(index, false)` so the app starts with all effects
+  bypassed. `Plugin::active` defaults to `true`; running all 19 in series stacks
+  every gain stage and is heard as a loud buzz. The user enables what they need
+  (or loads a preset, which sets `active` per slot).
 - **Preset control arrays are positional**, in the same order as the native
   control vector. For LV2 plugins that order is the lexicographic order of the
   JSON port keys (nlohmann `json` uses `std::map`), *not* the file order. For
