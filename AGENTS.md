@@ -141,12 +141,12 @@ not to file recording.
   name + control metadata). The plugin ID encodes the library:
   `library = ID / 100`, `plugin = ID % 100`. Library indices 0..149 map to
   `R.array.ladspa_plugins`; index `150 + i` maps to `R.array.lv2_plugins[i]`.
-- The rack currently has 19 slots (compressor, wah, drives, amp, cab, EQ,
-  modulation, delay, reverb, normalizer). `MAX_PLUGINS` in `FullDuplexPass.h`
-  is 32; keep the rack within that.
+- The rack currently has 20 slots (compressor, wah, drives, amp, cab, EQ,
+  modulation, delay, reverb, normalizer, plus the in-tree Tube Drive).
+  `MAX_PLUGINS` in `FullDuplexPass.h` is 32; keep the rack within that.
 - `MainActivity.loadPlugins()` loads every slot but calls
   `AudioEngine.togglePlugin(index, false)` so the app starts with all effects
-  bypassed. `Plugin::active` defaults to `true`; running all 19 in series stacks
+  bypassed. `Plugin::active` defaults to `true`; running all 20 in series stacks
   every gain stage and is heard as a loud buzz. The user enables what they need
   (or loads a preset, which sets `active` per slot).
 - **Preset control arrays are positional**, in the same order as the native
@@ -169,6 +169,38 @@ not to file recording.
   bundle metadata (`app/src/main/assets/lv2/<so>/<fragment>.json`, where
   `<fragment>` is the part after `#` in the plugin URI) exists, otherwise the
   plugin fails to load and shifts every preset index after it.
+
+### Adding an in-tree effect (built from C++ source)
+
+New effects that ship as source live in `app/src/main/cpp/` and are compiled
+into their own LADSPA library by `CMakeLists.txt` (see the `altodfx_tubedrive`
+target). Steps:
+
+1. Write the DSP as a header (e.g. `TubeDrive.h`), then a LADSPA wrapper `.cpp`
+   that defines `extern "C" const LADSPA_Descriptor *ladspa_descriptor(unsigned
+   long index)`. Keep the `LADSPA_Descriptor` initialiser field-for-field: an
+   omitted `deactivate` slot silently shifts `cleanup` and crashes on teardown.
+2. Add an `add_library(<name> SHARED <wrapper>.cpp)` target. Do **not** use
+   `-Ofast` for DSP: fast-math folds `std::isfinite` away, so a NaN/Inf guard
+   becomes dead code. Test finiteness via the bit pattern instead (see
+   `TubeDrive::isFinite`). `-O3` is fine.
+3. Pick a free library index in `R.array.ladspa_plugins`
+   (`app/src/main/res/values/arrays.xml`). Index `i` gives plugin IDs
+   `i*100 .. i*100+99`. Only ~21 of the 150 entries have a real `.so`; an entry
+   with no binary and no `voice.json`/`all_plugins.json` reference is safe to
+   reuse. `libaltodfx_tubedrive.so` occupies index 9 (IDs 900-999).
+4. Add the slot to `app/src/main/assets/voice.json`. `index` on each control is
+   the **LADSPA port number** (not the control's ordinal): the host matches it
+   against `PluginControl::port` in `getActivePluginValueByIndex` /
+   `setPluginControlByIndex`. List only the controls the UI should show.
+5. Add an entry to `app/src/main/assets/effect_presets.json` (three presets,
+   values keyed by control name) so the effect gets the quick-preset bar.
+6. The host connects the **same buffer** to the input and output audio ports
+   (`FullDuplexPass::process`), so `run()` must process in place. The rack is
+   mono; a stereo effect must downmix or process the mono channel only.
+7. Appending a slot at the end of `voice.json` keeps the existing factory
+   presets valid (they are positional but only cover the earlier slots). Do not
+   insert in the middle without rewriting every file in `assets/presets/`.
 
 ## Signing (release)
 

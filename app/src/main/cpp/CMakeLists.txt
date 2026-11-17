@@ -46,6 +46,18 @@ add_library( # Sets the name of the library.
         symap.c
         )
 
+# ALTODFX native effects.
+#
+# These are standalone LADSPA libraries: the host dlopen()s them by filename
+# from the app's native library directory (see R.array.ladspa_plugins), exactly
+# like the prebuilt effect .so files in ../jniLibs.
+add_library(altodfx_tubedrive SHARED TubeDrivePlugin.cpp)
+
+# Deliberately not -Ofast: fast-math lets the compiler assume every value is
+# finite, which would defeat the plugin's NaN/Inf sanitising. -O3 keeps the
+# checks intact and is fast enough for a 4x oversampled effect.
+target_compile_options(altodfx_tubedrive PRIVATE -Wall -O3)
+
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
 # default, you only need to specify the name of the public NDK library

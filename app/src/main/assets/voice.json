@@ -773,5 +773,31 @@
                 ]
             }
         }
+    },
+    "900": {
+        "name": "Tube Drive",
+        "controls": {
+            "0": {
+                "name": "Drive",
+                "default": 0.5,
+                "minimum": 0.0,
+                "maximum": 1.0,
+                "index": 2
+            },
+            "1": {
+                "name": "Tone",
+                "default": 0.5,
+                "minimum": 0.0,
+                "maximum": 1.0,
+                "index": 3
+            },
+            "2": {
+                "name": "Level",
+                "default": 0.75,
+                "minimum": 0.0,
+                "maximum": 1.0,
+                "index": 4
+            }
+        }
     }
 }

@@ -65,6 +65,12 @@
     "plugin": 0,
     "library": "libCabIII.so"
   },
+  "900": {
+    "name": "Tube Drive",
+    "id": 9000,
+    "plugin": 0,
+    "library": "libaltodfx_tubedrive.so"
+  },
   "1000": {
     "name": "C* CabinetIV - Idealised loudspeaker cabinet",
     "id": 2606,
