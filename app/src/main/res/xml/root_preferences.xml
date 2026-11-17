@@ -3,9 +3,9 @@
     <PreferenceCategory
         android:title="About">
         <Preference
-            android:title="@string/app_name"
+            android:title="@string/about_title"
             android:key="about"
-            android:summary="1.0 Build 4"/>
+            android:summary="@string/app_name"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="Audio">
         <ListPreference
@@ -21,6 +21,30 @@
             android:defaultValue="auto"
             android:entries="@array/audio_output_entries"
             android:entryValues="@array/audio_output_values"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Input cleanup (remove hum and hiss)">
+        <SwitchPreferenceCompat
+            android:title="Noise gate and DC filter"
+            android:key="input_clean"
+            android:defaultValue="true"
+            android:summary="Silences hiss and mains hum when you are not playing"/>
+
+        <ListPreference
+            android:title="Noise gate threshold"
+            android:key="noise_gate"
+            android:defaultValue="0.0035"
+            android:entries="@array/noise_gate_entries"
+            android:entryValues="@array/noise_gate_values"
+            android:summary="Higher = more aggressive noise removal"/>
+
+        <ListPreference
+            android:title="Low cut (anti-hum)"
+            android:key="input_highpass"
+            android:defaultValue="80"
+            android:entries="@array/input_highpass_entries"
+            android:entryValues="@array/input_highpass_values"
+            android:summary="Removes rumble and 50/60 Hz mains hum"/>
     </PreferenceCategory>
 
     <PreferenceCategory

@@ -50,6 +50,46 @@ plus LADSPA/LV2 plugin support).
   headset option applies to output; the input follows it only when the phone
   exposes a wired-headset input (TRRS with mic).
 
+## Noise / hum removal (input conditioning)
+
+- The native engine applies a front-end conditioner to the raw input before the
+  effect chain: a DC blocker + 1st-order high-pass (default 80 Hz) and a
+  soft envelope-follower noise gate. This is what keeps a guitar into a
+  headset-jack interface free of hiss and mains hum.
+- Implemented in `app/src/main/cpp/FullDuplexPass.h` (`class InputConditioner`,
+  used inside `onBothStreamsReady`). Sample rate is set from `Engine::openStreams`.
+- The input stream uses `oboe::InputPreset::Unprocessed`. Do **not** switch this
+  back to `VoicePerformance` / `VoiceCommunication`: those enable AGC and noise
+  suppression, which pump the level and add hiss on a guitar signal.
+- Controls: `AudioEngine.setInputConditionerEnabled(boolean)`,
+  `setNoiseGateThreshold(float)`, `setInputHighpass(float)`, driven from
+  `MainActivity.applyInputConditioner()` using the `input_clean`, `noise_gate`
+  and `input_highpass` preferences.
+
+## Effect rack and presets
+
+- The active rack is defined by `app/src/main/assets/voice.json` (plugin ID ->
+  name + control metadata). The plugin ID encodes the library:
+  `library = ID / 100`, `plugin = ID % 100`. Library indices 0..149 map to
+  `R.array.ladspa_plugins`; index `150 + i` maps to `R.array.lv2_plugins[i]`.
+- The rack currently has 19 slots (compressor, wah, drives, amp, cab, EQ,
+  modulation, delay, reverb, normalizer). `MAX_PLUGINS` in `FullDuplexPass.h`
+  is 32; keep the rack within that.
+- **Preset control arrays are positional**, in the same order as the native
+  control vector. For LV2 plugins that order is the lexicographic order of the
+  JSON port keys (nlohmann `json` uses `std::map`), *not* the file order. For
+  LADSPA it is the port index order. Always derive the order from the JSON
+  metadata; do not guess.
+- Factory presets live in `app/src/main/assets/presets/` (one JSON file per
+  preset, each with one entry per rack slot: `active`, `controls`, `name`).
+  Every factory preset must have exactly one entry per rack slot with the
+  correct control count, or `MainActivity.loadPreset` will mis-set controls.
+- Bundled effect plugins live in `app/src/main/jniLibs/<abi>/`. When adding an
+  effect, copy the `.so` into **all four** ABI folders and make sure the LV2
+  bundle metadata (`app/src/main/assets/lv2/<so>/<fragment>.json`, where
+  `<fragment>` is the part after `#` in the plugin URI) exists, otherwise the
+  plugin fails to load and shifts every preset index after it.
+
 ## Signing (release)
 
 - `app/build.gradle` reads signing values from `keystore.properties`

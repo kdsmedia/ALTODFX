@@ -82,6 +82,10 @@ public class AudioEngine {
     public static native void setLibraryPath (String path);
     public static native void setInputVolume (float volume);
     public static native void setOutputVolume (float volume);
+    // Front-end input conditioning (noise gate + high-pass / DC blocker)
+    public static native void setInputConditionerEnabled (boolean enabled);
+    public static native void setNoiseGateThreshold (float threshold);
+    public static native void setInputHighpass (float frequency);
     public static native void toggleMixer (boolean toggle);
     public static native void printActiveChain ();
 

@@ -1,45 +1,66 @@
-# Tonesmith
-## What is it?
-Tonesmith is an easy to use **guitar multi effects processor** for Android. You can use it to put some nice effects on your electric guitar sound, and create some nice tones. You can also **record audio directly to MP3** with the in built high precision recorder.
+# ALTODFX
 
-It features 10 high quality effects which you can use to create a tone for every genre and every mood.
+ALTODFX is a **guitar multi-effects processor** for Android. Plug your guitar
+(or an iRIG-style interface) into the phone's 3.5 mm headset jack and play
+through a chain of amps, cabinets and stompboxes. You can also **record audio
+directly to MP3** with the built-in high-precision recorder.
+
+Audio input and output both run through the **single 3.5 mm headset jack** and
+are never routed through USB, so interfaces such as iRIG work as intended.
 
 ## Effects
-The following effects are included:
-- **Compressor**:
-Adjust the dynamic range of the audio input
-- **Amplifier**:
-Amp simulation effect with distortion, cabinet emulation and drive controls
-- **Distortion**
-Overdrive / Distortion effect suitable for fuzz / metal / rock sounds
-- **Echo**
-Echo / Delay effect 
-- **Reverb**
-Reverb effect with configurable modes
-- **Flanger**
-- **Chorus**
-- **Cabinet**
-Cabinet emulation effect with high quality cabs
-- **Normalizer**
-Compressor / Limiter
+
+ALTODFX ships a full, professional effect chain. Plugins are grouped by role
+and are all available in the rack:
+
+- **Noise gate / denoiser** - kills hiss, hum and mains buzz before anything else
+- **High-pass filter** - removes rumble and low-frequency mud
+- **Compressor** - adjusts the dynamic range of the input
+- **Overdrive / distortion / fuzz** - from warm crunch to screaming high gain
+- **Amplifier + cabinet** - amp and speaker simulation with many models
+- **EQ** - graphic and parametric tone shaping
+- **Modulation** - chorus, flanger, phaser, tremolo, vibrato, auto-wah
+- **Pitch** - octaver / pitch shift / harmonizer
+- **Delay / echo** - from slapback to long ambient repeats
+- **Reverb** - spring, hall, room and plate style reverbs
+- **Limiter / maximizer** - keeps the output loud without clipping
+- **Normalizer** - compressor / limiter for a consistent level
+
+## Presets
+
+ALTODFX includes factory presets covering every genre, plus room to save your
+own:
+
+Clean, Blues, Blues Drive, Jazz Clean, Country Twang, Funk Wah, Surf Reverb,
+Rock Rhythm, Rock Lead, Classic Rock, Hard Rock, Heavy Metal, Metal Rhythm,
+Metal Lead, Punk, Grunge, Progressive, Shred Lead, Ambient, Dreamy, Stadium
+Rock, Slapback, Ringing Echo, Acoustic Simulator, Bass, Vox / Voice.
+
+Presets are loaded from `app/src/main/assets/presets/`. User presets are saved
+to the app's documents folder and appear in the same list.
 
 ## Features
-- USB OTG Audio Device support: Use USB audio interfaces or external soundcards to record audio.
+
+- **3.5 mm headset jack input and output** (iRIG-compatible), USB audio is
+  deliberately excluded
 - Record directly to MP3
-- Floating point precision for high quality audio processing
-- Ultra Low latency for lag free recording experience
-- Low memory footprint provides great performance on even low end devices
-- High performance efficient audio engine
+- Floating point precision for high-quality audio processing
+- Ultra-low latency for a lag-free playing experience
+- Built-in noise gate and high-pass stage to keep the signal clean and free of
+  hum and hiss
+- Low memory footprint, great performance even on low-end devices
 - No ads
 - No unnecessary permissions required
+- Completely free and offline
 
-## Completely open source
-Made with ❤️
+## Building
 
-## Screenshots
-![Screenshot_20240602-175259 png](https://github.com/djshaji/tonesmith/assets/17184025/6d193f84-d9ed-499a-ab48-d2f35c6a79c3)
-![Screenshot_20240602-175307 png](https://github.com/djshaji/tonesmith/assets/17184025/f497f83a-6e2e-4e36-a219-3c2ca8604539)
-![Screenshot_20240602-175321 png](https://github.com/djshaji/tonesmith/assets/17184025/017c073e-99e2-461c-8103-f64bf7241650)
-![Screenshot_20240602-175326 png](https://github.com/djshaji/tonesmith/assets/17184025/c5a43e18-f6ee-4ebe-ab32-0e6e797523b7)
-![Screenshot_20240602-175335 png](https://github.com/djshaji/tonesmith/assets/17184025/802728a9-77fa-4573-ada8-a204da1b1be6)
-![Screenshot_20240602-175340 png](https://github.com/djshaji/tonesmith/assets/17184025/41608405-814e-466c-8d34-780f0daac8fb)
+```
+./gradlew assembleRelease bundleRelease
+```
+
+The native audio engine sources are vendored in `app/src/main/cpp` and the
+prebuilt static libraries live in `app/src/main/jniLibs/<abi>`, so the project
+builds on its own without any external checkout.
+
+Made with love

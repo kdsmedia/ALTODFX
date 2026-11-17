@@ -67,7 +67,7 @@
             android:drawableLeft="@drawable/baseline_power_settings_new_24"/>
 
         <ImageView
-            android:background="@drawable/tonesmith"
+            android:background="@drawable/altodfx"
             android:layout_width="50dp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
@@ -138,7 +138,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Presets"/>
+            android:text="@string/presets_label"/>
 
         <Spinner
             android:layout_width="0dp"

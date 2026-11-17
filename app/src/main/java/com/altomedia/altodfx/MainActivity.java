@@ -848,10 +848,25 @@ public class MainActivity extends AppCompatActivity {
             if (outputDevice > 0) {
                 AudioEngine.setPlaybackDeviceId(outputDevice);
             }
+            applyInputConditioner();
             AudioEngine.setLamePreset(Integer.parseInt(defaultSharedPreferences.getString("lame_preset", "1001")));
         } catch (NumberFormatException e) {
             Log.e(TAG, "applySettings: ", e);
         }
+    }
+
+    // The front-end conditioner removes DC offset, mains hum and hiss before the
+    // signal reaches the effect chain. Without it a guitar into a headset-jack
+    // interface tends to hum and buzz.
+    public static void applyInputConditioner () {
+        boolean enabled = defaultSharedPreferences.getBoolean("input_clean", true);
+        float gate = Float.parseFloat(defaultSharedPreferences.getString("noise_gate", "0.0035"));
+        float highpass = Float.parseFloat(defaultSharedPreferences.getString("input_highpass", "80"));
+        AudioEngine.setInputConditionerEnabled(enabled);
+        AudioEngine.setNoiseGateThreshold(gate);
+        AudioEngine.setInputHighpass(highpass);
+        Log.d(TAG, String.format("[conditioner] enabled: %s, gate: %f, highpass: %f",
+                enabled, gate, highpass));
     }
 
     public static void applyInputDevice (String preference) {

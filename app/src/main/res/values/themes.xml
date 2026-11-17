@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.AXVoiceRecorder" parent="Theme.Material3.Dark.NoActionBar">
+    <style name="Base.Theme.ALTODFX" parent="Theme.Material3.Dark.NoActionBar">
         <!-- Customize your light theme here. -->
          <item name="colorSecondary">#07487C</item>
          <item name="colorAccent">#0B74C8</item>
@@ -9,5 +9,5 @@
          <item name="colorOnSecondary">#ECF6FE</item>
     </style>
 
-    <style name="Theme.AXVoiceRecorder" parent="Base.Theme.AXVoiceRecorder" />
+    <style name="Theme.ALTODFX" parent="Base.Theme.ALTODFX" />
 </resources>

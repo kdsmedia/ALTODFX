@@ -524,4 +524,34 @@
         <item>1003</item>
         <item>1003</item>
     </string-array>
+
+    <string-array name="noise_gate_entries">
+        <item>Off (very sensitive)</item>
+        <item>Low</item>
+        <item>Medium</item>
+        <item>High</item>
+        <item>Very high (noisy rooms)</item>
+    </string-array>
+    <string-array name="noise_gate_values">
+        <item>0.0005</item>
+        <item>0.002</item>
+        <item>0.0035</item>
+        <item>0.008</item>
+        <item>0.02</item>
+    </string-array>
+
+    <string-array name="input_highpass_entries">
+        <item>Off (no low cut)</item>
+        <item>40 Hz (gentle)</item>
+        <item>80 Hz (recommended)</item>
+        <item>120 Hz (anti-hum)</item>
+        <item>200 Hz (thin / bright)</item>
+    </string-array>
+    <string-array name="input_highpass_values">
+        <item>10</item>
+        <item>40</item>
+        <item>80</item>
+        <item>120</item>
+        <item>200</item>
+    </string-array>
 </resources>
