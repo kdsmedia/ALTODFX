@@ -73,6 +73,7 @@ public class DataAdapter extends RecyclerView.Adapter <DataAdapter.ViewHolder> {
         holder.sliders = new ArrayList<>();
         ArrayList<ControlDefault> controlDefaults = new ArrayList<>();
         holder.presetBar.removeAllViews();
+        holder.presetBar.setVisibility(View.GONE);
         LinkedHashMap<String, Slider> slidersByName = new LinkedHashMap<>();
         LinkedHashMap<String, ArrayList<Integer>> indicesByName = new LinkedHashMap<>();
         if (linearLayout == null) {
@@ -390,6 +391,11 @@ public class DataAdapter extends RecyclerView.Adapter <DataAdapter.ViewHolder> {
     private void applyPreset(ViewHolder holder, JSONObject preset,
                              LinkedHashMap<String, Slider> slidersByName,
                              LinkedHashMap<String, ArrayList<Integer>> indicesByName) {
+        int position = holder.getAdapterPosition();
+        if (position == RecyclerView.NO_POSITION) {
+            return;
+        }
+
         try {
             JSONObject values = preset.getJSONObject("values");
             Iterator<String> controls = values.keys();
@@ -405,7 +411,7 @@ public class DataAdapter extends RecyclerView.Adapter <DataAdapter.ViewHolder> {
                 slider.setValue(Math.max(slider.getValueFrom(),
                         Math.min(slider.getValueTo(), value)));
                 for (int i = 0; i < index.size(); i++) {
-                    AudioEngine.setPluginControlByIndex(holder.getAdapterPosition(), index.get(i), value);
+                    AudioEngine.setPluginControlByIndex(position, index.get(i), value);
                 }
             }
         } catch (JSONException e) {
