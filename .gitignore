@@ -14,7 +14,7 @@
 .cxx
 local.properties
 
-# Signing credentials (contains passwords / private keys)
-keystore.properties
-*.jks
-*.keystore
+# NOTE: the signing keystore and its credentials are intentionally committed to
+# this repository at the owner's explicit request. The repository is public, so
+# anyone can read these files and produce builds signed with this key. Remove
+# this exception if the project is ever distributed or published.
