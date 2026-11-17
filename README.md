@@ -38,6 +38,11 @@ Rock, Slapback, Ringing Echo, Acoustic Simulator, Bass, Vox / Voice.
 Presets are loaded from `app/src/main/assets/presets/`. User presets are saved
 to the app's documents folder and appear in the same list.
 
+Every effect also has three quick presets of its own, defined in
+`app/src/main/assets/effect_presets.json`. Open an effect's controls (the
+settings toggle on its card) and pick one of the three buttons to change the
+character of that single effect in one tap.
+
 ## Features
 
 - **3.5 mm headset jack input and output** (iRIG-compatible), USB audio is

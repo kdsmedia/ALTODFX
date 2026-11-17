@@ -1,0 +1,154 @@
+{
+  "30700": {
+    "name": "Compressor",
+    "presets": [
+      { "name": "Ringan", "values": { "RATIO": 2.0, "KNEE": 3.0, "THRESHOLD": -18.0, "RELEASE": 0.2, "ATTACK": 0.01 } },
+      { "name": "Sedang", "values": { "RATIO": 4.0, "KNEE": 6.0, "THRESHOLD": -22.0, "RELEASE": 0.3, "ATTACK": 0.005 } },
+      { "name": "Ketat", "values": { "RATIO": 8.0, "KNEE": 8.0, "THRESHOLD": -28.0, "RELEASE": 0.1, "ATTACK": 0.002 } }
+    ]
+  },
+  "30200": {
+    "name": "AutoWah",
+    "presets": [
+      { "name": "Funk", "values": { "Wah": 0.75 } },
+      { "name": "Vokal", "values": { "Wah": 0.5 } },
+      { "name": "Bass", "values": { "Wah": 0.3 } }
+    ]
+  },
+  "21300": {
+    "name": "Overdrive",
+    "presets": [
+      { "name": "Warm", "values": { "GAIN": 0.35, "TONE": 0.45, "VOLUME": 0.7 } },
+      { "name": "Blues", "values": { "GAIN": 0.5, "TONE": 0.55, "VOLUME": 0.75 } },
+      { "name": "Boost", "values": { "GAIN": 0.2, "TONE": 0.6, "VOLUME": 0.9 } }
+    ]
+  },
+  "32500": {
+    "name": "Distortion",
+    "presets": [
+      { "name": "Rock", "values": { "TONE": 0.5, "DRIVE": 8.0, "PREGAIN": 0.0, "GAIN": 0.0, "HIGHGAIN": 0.3 } },
+      { "name": "Hard", "values": { "TONE": 0.45, "DRIVE": 14.0, "PREGAIN": 2.0, "GAIN": 2.0, "HIGHGAIN": 0.6 } },
+      { "name": "Metal", "values": { "TONE": 0.4, "DRIVE": 19.0, "PREGAIN": 4.0, "GAIN": 4.0, "HIGHGAIN": 0.9 } }
+    ]
+  },
+  "31400": {
+    "name": "Fuzz",
+    "presets": [
+      { "name": "Klasik", "values": { "INPUT": 0.0, "OUTPUT": 80.0, "DRIVE": 30.0, "TONE": 0.5 } },
+      { "name": "Vintage", "values": { "INPUT": -2.0, "OUTPUT": 70.0, "DRIVE": 15.0, "TONE": 0.35 } },
+      { "name": "Wild", "values": { "INPUT": 2.0, "OUTPUT": 100.0, "DRIVE": 80.0, "TONE": 0.6 } }
+    ]
+  },
+  "31500": {
+    "name": "Muff",
+    "presets": [
+      { "name": "Klasik", "values": { "TONE": 0.5, "VOLUME": 0.6 } },
+      { "name": "Gelap", "values": { "TONE": 0.25, "VOLUME": 0.65 } },
+      { "name": "Terang", "values": { "TONE": 0.8, "VOLUME": 0.55 } }
+    ]
+  },
+  "24900": {
+    "name": "Distortion+",
+    "presets": [
+      { "name": "Klasik", "values": { "DISTORTION": 0.5, "OUTPUT": 0.5, "BASSBOOST": 0.0 } },
+      { "name": "Tajam", "values": { "DISTORTION": 0.8, "OUTPUT": 0.45, "BASSBOOST": 0.0 } },
+      { "name": "Tebal", "values": { "DISTORTION": 0.6, "OUTPUT": 0.5, "BASSBOOST": 1.0 } }
+    ]
+  },
+  "32400": {
+    "name": "Amplifier",
+    "presets": [
+      { "name": "Clean", "values": { "Distortion": 5.0, "Drive": 0.15, "Presence": 5.0, "Model": 0.0, "Tonestack Model": 1.0 } },
+      { "name": "Crunch", "values": { "Distortion": 35.0, "Drive": 0.45, "Presence": 5.0, "Model": 3.0, "Tonestack Model": 4.0 } },
+      { "name": "Lead", "values": { "Distortion": 70.0, "Drive": 0.8, "Presence": 7.0, "Model": 5.0, "Tonestack Model": 5.0 } }
+    ]
+  },
+  "5500": {
+    "name": "Cabinet",
+    "presets": [
+      { "name": "Bersih", "values": { "Gain": 0.0, "Model": 0.0 } },
+      { "name": "Hangat", "values": { "Gain": 1.0, "Model": 3.0 } },
+      { "name": "Tebal", "values": { "Gain": -2.0, "Model": 6.0 } }
+    ]
+  },
+  "3300": {
+    "name": "Equalizer",
+    "presets": [
+      { "name": "Flat", "values": { "Low": 0.0, "Mid": 0.0, "High": 0.0 } },
+      { "name": "Bright", "values": { "Low": -1.0, "Mid": 0.0, "High": 3.0 } },
+      { "name": "Warm", "values": { "Low": 3.0, "Mid": 1.0, "High": -1.0 } }
+    ]
+  },
+  "27700": {
+    "name": "Phaser",
+    "presets": [
+      { "name": "Subtil", "values": { "Dry/Wet": 40.0, "LEVEL": 0.0, "SPEED": 0.4 } },
+      { "name": "Klasik", "values": { "Dry/Wet": 50.0, "LEVEL": 0.0, "SPEED": 0.5 } },
+      { "name": "Dalam", "values": { "Dry/Wet": 60.0, "LEVEL": 0.0, "SPEED": 0.25 } }
+    ]
+  },
+  "30500": {
+    "name": "Chorus",
+    "presets": [
+      { "name": "Subtil", "values": { "Level": 0.35, "Delay": 0.01, "Depth": 0.25, "Freq": 0.6 } },
+      { "name": "Klasik", "values": { "Level": 0.5, "Delay": 0.02, "Depth": 0.45, "Freq": 1.0 } },
+      { "name": "Lebar", "values": { "Level": 0.6, "Delay": 0.03, "Depth": 0.7, "Freq": 0.4 } }
+    ]
+  },
+  "26100": {
+    "name": "Flanger",
+    "presets": [
+      { "name": "Subtil", "values": { "DEPTH": 1.5, "WIDTH": 5.0, "FREQ": 0.5, "MIX": 0.0 } },
+      { "name": "Jet", "values": { "DEPTH": 3.5, "WIDTH": 7.0, "FREQ": 0.3, "MIX": 0.2 } },
+      { "name": "Sweep", "values": { "DEPTH": 4.5, "WIDTH": 9.0, "FREQ": 0.15, "MIX": 0.3 } }
+    ]
+  },
+  "29000": {
+    "name": "Tremolo",
+    "presets": [
+      { "name": "Subtil", "values": { "Dry/Wet": 30.0, "Mode": 0.0, "Depth": 0.3, "Freq": 4.0, "Reset": 0.0 } },
+      { "name": "Klasik", "values": { "Dry/Wet": 50.0, "Mode": 0.0, "Depth": 0.5, "Freq": 5.0, "Reset": 0.0 } },
+      { "name": "Dalam", "values": { "Dry/Wet": 70.0, "Mode": 0.0, "Depth": 0.8, "Freq": 6.0, "Reset": 0.0 } }
+    ]
+  },
+  "27600": {
+    "name": "Octaver",
+    "presets": [
+      { "name": "Halus", "values": { "DIRECT": 0.8, "OCTAVE1": 0.3, "OCTAVE2": 0.0 } },
+      { "name": "Oktaf Bawah", "values": { "DIRECT": 0.5, "OCTAVE1": 0.8, "OCTAVE2": 0.2 } },
+      { "name": "Organ", "values": { "DIRECT": 0.4, "OCTAVE1": 0.7, "OCTAVE2": 0.6 } }
+    ]
+  },
+  "30900": {
+    "name": "Delay",
+    "presets": [
+      { "name": "Slap", "values": { "Mode": 0.0, "R Level": -6.0, "R Time": 110.0, "L Level": -6.0, "L Time": 110.0, "LFO": 0.2, "Link (L+R)": 1.0 } },
+      { "name": "Klasik", "values": { "Mode": 0.0, "R Level": -8.0, "R Time": 300.0, "L Level": -8.0, "L Time": 300.0, "LFO": 0.2, "Link (L+R)": 1.0 } },
+      { "name": "Panjang", "values": { "Mode": 0.0, "R Level": -6.0, "R Time": 450.0, "L Level": -6.0, "L Time": 450.0, "LFO": 0.3, "Link (L+R)": 1.0 } }
+    ]
+  },
+  "3600": {
+    "name": "Echo",
+    "presets": [
+      { "name": "Pendek", "values": { "Amount": 20.0, "Time (ms)": 250.0 } },
+      { "name": "Sedang", "values": { "Amount": 30.0, "Time (ms)": 480.0 } },
+      { "name": "Panjang", "values": { "Amount": 40.0, "Time (ms)": 700.0 } }
+    ]
+  },
+  "12900": {
+    "name": "Reverb",
+    "presets": [
+      { "name": "Ruang", "values": { "Decay": 1200.0, "Amount": -8.0, "Mode": 5.0 } },
+      { "name": "Hall", "values": { "Decay": 3000.0, "Amount": -6.0, "Mode": 15.0 } },
+      { "name": "Ambien", "values": { "Decay": 6000.0, "Amount": -4.0, "Mode": 30.0 } }
+    ]
+  },
+  "3500": {
+    "name": "Normalizer",
+    "presets": [
+      { "name": "Halus", "values": { "Target Amplitude": -1.0, "Compression Amount": 0.3 } },
+      { "name": "Sedang", "values": { "Target Amplitude": -3.0, "Compression Amount": 0.5 } },
+      { "name": "Kuat", "values": { "Target Amplitude": -6.0, "Compression Amount": 0.8 } }
+    ]
+  }
+}

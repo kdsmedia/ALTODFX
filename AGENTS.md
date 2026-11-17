@@ -117,6 +117,12 @@ not to file recording.
   preset, each with one entry per rack slot: `active`, `controls`, `name`).
   Every factory preset must have exactly one entry per rack slot with the
   correct control count, or `MainActivity.loadPreset` will mis-set controls.
+- Per-effect quick presets live in `app/src/main/assets/effect_presets.json`,
+  keyed by the same plugin ID as `voice.json`, with exactly three named presets
+  each. Values are keyed by control *name* (not index) and must stay inside the
+  `minimum`/`maximum` of that control in `voice.json`. `DataAdapter` renders one
+  button per preset under the effect's controls and applies every listed control
+  at once; controls missing from a preset are left untouched.
 - Bundled effect plugins live in `app/src/main/jniLibs/<abi>/`. When adding an
   effect, copy the `.so` into **all four** ABI folders and make sure the LV2
   bundle metadata (`app/src/main/assets/lv2/<so>/<fragment>.json`, where

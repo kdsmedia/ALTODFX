@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Objects;
 
 public class DataAdapter extends RecyclerView.Adapter <DataAdapter.ViewHolder> {
@@ -47,9 +48,8 @@ public class DataAdapter extends RecyclerView.Adapter <DataAdapter.ViewHolder> {
     public static class ControlDefault {
         Slider slider ;
         float def;
+        ArrayList<Integer> index ;
     }
-
-    ArrayList <ControlDefault> controlDefaults = new ArrayList<>() ;
 
     public DataAdapter(MainActivity _mainActivity) {
         context = mainActivity = _mainActivity ;
@@ -71,6 +71,10 @@ public class DataAdapter extends RecyclerView.Adapter <DataAdapter.ViewHolder> {
         LinearLayout linearLayout = holder.linearLayout;
         linearLayout.removeAllViews();
         holder.sliders = new ArrayList<>();
+        ArrayList<ControlDefault> controlDefaults = new ArrayList<>();
+        holder.presetBar.removeAllViews();
+        LinkedHashMap<String, Slider> slidersByName = new LinkedHashMap<>();
+        LinkedHashMap<String, ArrayList<Integer>> indicesByName = new LinkedHashMap<>();
         if (linearLayout == null) {
             Log.wtf(TAG, "linear layout for plugin!") ;
             return ;
@@ -82,6 +86,9 @@ public class DataAdapter extends RecyclerView.Adapter <DataAdapter.ViewHolder> {
                 for (int i = 0 ; i < controlDefaults.size() ; i ++) {
                     ControlDefault controlDefault = controlDefaults.get(i);
                     controlDefault.slider.setValue(controlDefault.def);
+                    for (int control = 0; control < controlDefault.index.size(); control++)
+                        AudioEngine.setPluginControlByIndex(holder.getAdapterPosition(),
+                                controlDefault.index.get(control), controlDefault.def);
                 }
             }
         });
@@ -171,21 +178,33 @@ public class DataAdapter extends RecyclerView.Adapter <DataAdapter.ViewHolder> {
                 ControlDefault controlDefault = new ControlDefault();
                 controlDefault.slider = slider ;
                 controlDefault.def = (float) def;
+                controlDefault.index = index;
                 controlDefaults.add(controlDefault);
                 holder.sliders.add(slider);
+                slidersByName.put(cname, slider);
+                indicesByName.put(cname, index);
 
                 Spinner spinner = new Spinner(context);
                 float spinnerValue = 0;
 
+                // The range must be widened before any value is applied: a slider
+                // rejects values outside its current range, and most controls here
+                // span far more than the default 0..1.
                 try {
-                    float value = AudioEngine.getActivePluginValueByIndex(position, index.get(0)) ;
-                    Log.i(TAG, name +
-                            String.format (" value %d:%d %f", position, index.get(0), value));
-                    slider.setValue(value);
-                    spinnerValue = value;
-
                     slider.setValueTo((float) max);
                     slider.setValueFrom((float) min);
+                } catch (IllegalStateException e) {
+                    Log.e(TAG, String.format("onBindViewHolder: invalid slider range: %f, %f", min, max), e);
+                }
+
+                try {
+                    if (! index.isEmpty()) {
+                        float value = AudioEngine.getActivePluginValueByIndex(position, index.get(0)) ;
+                        Log.i(TAG, name +
+                                String.format (" value %d:%d %f", position, index.get(0), value));
+                        slider.setValue(Math.max((float) min, Math.min((float) max, value)));
+                        spinnerValue = value;
+                    }
                 } catch (IllegalStateException e) {
                     Log.e(TAG, String.format("onBindViewHolder: error setting slider value: %d, %d", min, max), e);
                 }
@@ -301,10 +320,97 @@ public class DataAdapter extends RecyclerView.Adapter <DataAdapter.ViewHolder> {
                     }
                 });
             }
+
+            bindPresets(holder, position, slidersByName, indicesByName);
         } catch (JSONException e) {
             Log.e(TAG, "onBindViewHolder: ", e);
         }
 
+    }
+
+    /**
+     * Renders the three per-effect quick presets (one row of buttons) and wires
+     * each button to set every control of this effect at once. Mirrors the
+     * "quick preset" buttons of the reference app so a single tap changes the
+     * character of an effect without touching each slider.
+     */
+    private void bindPresets(ViewHolder holder, int position,
+                             LinkedHashMap<String, Slider> slidersByName,
+                             LinkedHashMap<String, ArrayList<Integer>> indicesByName) {
+        JSONObject effectPresets = mainActivity.effectPresets;
+        if (effectPresets == null) {
+            holder.presetBar.setVisibility(View.GONE);
+            return;
+        }
+
+        JSONArray presets = null;
+        try {
+            JSONObject entry = effectPresets.getJSONObject(String.valueOf(plugins.get(position)));
+            presets = entry.getJSONArray("presets");
+        } catch (JSONException e) {
+            holder.presetBar.setVisibility(View.GONE);
+            return;
+        }
+
+        if (presets.length() == 0) {
+            holder.presetBar.setVisibility(View.GONE);
+            return;
+        }
+
+        holder.presetBar.setVisibility(View.VISIBLE);
+        for (int i = 0; i < presets.length(); i++) {
+            final JSONObject preset;
+            final String presetName;
+            try {
+                preset = presets.getJSONObject(i);
+                presetName = preset.getString("name");
+            } catch (JSONException e) {
+                continue;
+            }
+
+            Button button = new Button(context);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+            params.setMargins(4, 4, 4, 4);
+            button.setLayoutParams(params);
+            button.setText(presetName);
+            button.setAllCaps(false);
+            button.setTextSize(12);
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    applyPreset(holder, preset, slidersByName, indicesByName);
+                }
+            });
+            holder.presetBar.addView(button);
+        }
+    }
+
+    /** Applies one preset: moves every named slider and pushes the value to DSP. */
+    private void applyPreset(ViewHolder holder, JSONObject preset,
+                             LinkedHashMap<String, Slider> slidersByName,
+                             LinkedHashMap<String, ArrayList<Integer>> indicesByName) {
+        try {
+            JSONObject values = preset.getJSONObject("values");
+            Iterator<String> controls = values.keys();
+            while (controls.hasNext()) {
+                String control = controls.next();
+                Slider slider = slidersByName.get(control);
+                ArrayList<Integer> index = indicesByName.get(control);
+                if (slider == null || index == null) {
+                    continue;
+                }
+
+                float value = (float) values.getDouble(control);
+                slider.setValue(Math.max(slider.getValueFrom(),
+                        Math.min(slider.getValueTo(), value)));
+                for (int i = 0; i < index.size(); i++) {
+                    AudioEngine.setPluginControlByIndex(holder.getAdapterPosition(), index.get(i), value);
+                }
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "applyPreset: ", e);
+        }
     }
 
     @Override
@@ -316,6 +422,7 @@ public class DataAdapter extends RecyclerView.Adapter <DataAdapter.ViewHolder> {
         ArrayList <Slider> sliders ;
         public LinearLayout linearLayout, buttonBox ;
         public LinearLayout root ;
+        public LinearLayout presetBar ;
         public Button reset;
         public TextView pluginName ;
         public SwitchMaterial switchMaterial ;
@@ -332,6 +439,7 @@ public class DataAdapter extends RecyclerView.Adapter <DataAdapter.ViewHolder> {
             switchMaterial = root.findViewById(R.id.toggle);
             showControls = root.findViewById(R.id.show_controls);
             reset = root.findViewById(R.id.reset);
+            presetBar = root.findViewById(R.id.preset_bar);
         }
     }
 

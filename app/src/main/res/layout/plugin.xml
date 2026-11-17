@@ -52,4 +52,13 @@
         android:layout_height="wrap_content"
         android:id="@+id/controls_layout"/>
 
+    <LinearLayout
+        android:visibility="visible"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/preset_bar"/>
+
 </LinearLayout>

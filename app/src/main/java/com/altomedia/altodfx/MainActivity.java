@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
     public static String TAG = "MainActivity";
     private static final int AUDIO_EFFECT_REQUEST = 0;
     boolean running = false;
-    JSONObject allPlugins, ampModels;
+    JSONObject allPlugins, ampModels, effectPresets;
     ArrayList<String> presetsForAdapter ;
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
@@ -113,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
 //        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
 
         ampModels = loadJSONFromAssetFile(this, "amps.json");
+        effectPresets = loadJSONFromAssetFile(this, "effect_presets.json");
 
         defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
