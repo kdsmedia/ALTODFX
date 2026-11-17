@@ -1,7 +1,6 @@
-package org.acoustixaudio.tonesmith;
+package com.altomedia.altodfx;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,8 +24,8 @@ import com.google.android.material.slider.Slider;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.shajikhan.ladspa.amprack.AudioEngine;
 
-import org.acoustixaudio.tonesmith.MainActivity;
-import org.acoustixaudio.tonesmith.R;
+import com.altomedia.altodfx.MainActivity;
+import com.altomedia.altodfx.R;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -106,14 +105,6 @@ public class DataAdapter extends RecyclerView.Adapter <DataAdapter.ViewHolder> {
             }
         });
 
-        holder.switchMaterial.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (holder.switchMaterial.isChecked() && ! mainActivity.proVersion && AudioEngine.getActiveEnabledPlugins() > 1) {
-//                    mainActivity.startActivity(new Intent(mainActivity,Purchase.class));
-                }
-            }
-        });
         
         holder.switchMaterial.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Tone Smith"
+rootProject.name = "ALTODFX"
 include ':app'

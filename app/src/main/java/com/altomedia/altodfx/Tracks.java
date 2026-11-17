@@ -1,4 +1,4 @@
-package org.acoustixaudio.tonesmith;
+package com.altomedia.altodfx;
 
 import android.content.Context;
 import android.content.Intent;

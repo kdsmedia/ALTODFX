@@ -1,4 +1,4 @@
-package org.acoustixaudio.tonesmith;
+package com.altomedia.altodfx;
 
 import static android.os.Environment.DIRECTORY_DOCUMENTS;
 import static android.os.Environment.DIRECTORY_MUSIC;
@@ -18,14 +18,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
-import com.android.billingclient.api.AcknowledgePurchaseParams;
-import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
-import com.android.billingclient.api.BillingClient;
-import com.android.billingclient.api.BillingClientStateListener;
-import com.android.billingclient.api.BillingResult;
-import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.PurchasesResponseListener;
-import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackException;
@@ -57,7 +49,7 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.acoustixaudio.tonesmith.databinding.ActivityMainBinding;
+import com.altomedia.altodfx.databinding.ActivityMainBinding;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -107,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
     LinearLayout lastRecordedBox;
-    public static boolean proVersion = false ;
     ArrayList <Integer> pluginIDs = new ArrayList<>();
     public static Context context;
     public static MainActivity mainActivity;
@@ -115,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
     String [] factoryPresets;
     String presetsDir ;
     RecyclerView recyclerView;
-    org.acoustixaudio.tonesmith.DataAdapter dataAdapter;
+    com.altomedia.altodfx.DataAdapter dataAdapter;
     JSONObject availablePlugins, availablePluginsLV2;
     static String[] sharedLibraries;
     static String[] sharedLibrariesLV2;
@@ -127,12 +118,6 @@ public class MainActivity extends AppCompatActivity {
     static {
         System.loadLibrary("amprack");
     }
-
-    private AcknowledgePurchaseResponseListener acknowledgePurchaseResponseListener;
-    private PurchasesResponseListener purchasesResponseListener;
-    private PurchasesUpdatedListener purchasesUpdatedListener;
-    private BillingClient billingClient;
-    private boolean nag = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,88 +134,6 @@ public class MainActivity extends AppCompatActivity {
         ampModels = loadJSONFromAssetFile(this, "amps.json");
 
         defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-
-        try {
-            proVersion = defaultSharedPreferences.getBoolean("pro", false);
-        } catch (ClassCastException e) {
-            Log.e(TAG, "onCreate: incorrect preference found!", e);
-            proVersion = false;
-            defaultSharedPreferences.edit().putBoolean("pro", false).apply();
-        }
-
-        Log.d(TAG, "onCreate: purchased proVersion: " + proVersion);
-
-        if (!proVersion) {
-            acknowledgePurchaseResponseListener = new AcknowledgePurchaseResponseListener() {
-                @Override
-                public void onAcknowledgePurchaseResponse(@NonNull BillingResult billingResult) {
-                    Log.d(TAG, "onAcknowledgePurchaseResponse: " + billingResult.getDebugMessage());
-                }
-            };
-
-            purchasesResponseListener = new PurchasesResponseListener() {
-                @Override
-                public void onQueryPurchasesResponse(@NonNull BillingResult billingResult, @NonNull List<Purchase> list) {
-                    Log.d(TAG, "onQueryPurchasesResponse: " + billingResult.getDebugMessage());
-                    if (list.isEmpty()) {
-                        Log.d(TAG, "onQueryPurchasesResponse: no purchases");
-                        Log.d(TAG, "onQueryPurchasesResponse: not PRO version");
-
-                        defaultSharedPreferences.edit().putBoolean("pro", false).apply();
-                        return;
-                    }
-
-                    Purchase purchase = list.get(0);
-                    if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
-                        Log.d(TAG, "onQueryPurchasesResponse: purchased");
-                        proVersion = true;
-                        defaultSharedPreferences.edit().putBoolean("pro", true).apply();
-                    } else {
-                        Log.d(TAG, "onQueryPurchasesResponse: not PRO version");
-                        defaultSharedPreferences.edit().putBoolean("pro", false).apply();
-                    }
-                }
-            };
-
-            purchasesUpdatedListener = new PurchasesUpdatedListener() {
-
-                @Override
-                public void onPurchasesUpdated(@NonNull BillingResult billingResult, @Nullable List<com.android.billingclient.api.Purchase> list) {
-                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK
-                            && list != null) {
-                        for (com.android.billingclient.api.Purchase purchase : list) {
-                            handlePurchase(purchase);
-                        }
-                    } else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED) {
-                        // Handle an error caused by a user cancelling the purchase flow.
-                        Log.d(TAG, "onPurchasesUpdated: user cancelled purchase");
-                    } else {
-                        // Handle any other error codes.
-                        Log.d(TAG, "onPurchasesUpdated: got purchase response " + billingResult.getDebugMessage());
-                    }
-
-                }
-            };
-
-            billingClient = BillingClient.newBuilder(context)
-                    .enablePendingPurchases()
-                    .setListener(purchasesUpdatedListener)
-                    .build();
-
-            billingClient.startConnection(new BillingClientStateListener() {
-                @Override
-                public void onBillingServiceDisconnected() {
-
-                }
-
-                @Override
-                public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
-                    Log.d(TAG, "onBillingSetupFinished: " + billingResult.getDebugMessage());
-                    billingClient.queryPurchasesAsync(BillingClient.SkuType.INAPP, purchasesResponseListener);
-
-                }
-            });
-        }
 
         AudioEngine.setExportFormat(2);
         dir = getExternalFilesDir(DIRECTORY_MUSIC).getPath();
@@ -413,11 +316,6 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         record.setChecked(false);
                     }
-
-                    if (nag && ! proVersion) {
-                        nag = false ;
-                        startActivity(new Intent(mainActivity,org.acoustixaudio.tonesmith.Purchase.class));
-                    }
                 }
             }
         });
@@ -547,27 +445,16 @@ public class MainActivity extends AppCompatActivity {
         sharedLibraries = context.getResources().getStringArray(R.array.ladspa_plugins);
         sharedLibrariesLV2 = context.getResources().getStringArray(R.array.lv2_plugins);
 
-        AudioEngine.setMainActivityClassName("org/acoustixaudio/tonesmith/MainActivity");
+        AudioEngine.setMainActivityClassName("com/altomedia/altodfx/MainActivity");
 
         loadPlugins();
         applySettings();
-
-        if (BuildConfig.BUILD_TYPE.equals("debug")) {
-            proVersion = true ;
-        }
-
-        if (proVersion) {
-            ((TextView) findViewById(R.id.header_app_name)).setText("Premium");
-        }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        if (proVersion) {
-            menu.findItem(R.id.purchase).setVisible(false);
-        }
 
         return true;
     }
@@ -582,9 +469,6 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             startActivity(new Intent(context, SettingsActivity.class));
-            return true;
-        } else if (id == R.id.purchase) {
-            startActivity(new Intent(context, org.acoustixaudio.tonesmith.Purchase.class));
             return true;
         }
 
@@ -833,7 +717,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intentShareFile = new Intent(Intent.ACTION_SEND);
         Uri contentUri = null;
         try {
-            contentUri = FileProvider.getUriForFile(context, "org.acoustixaudio.tonesmith.fileprovider", file);
+            contentUri = FileProvider.getUriForFile(context, "com.altomedia.altodfx.fileprovider", file);
         } catch (IllegalArgumentException illegalArgumentException) {
             Log.e(TAG, "shareFile: ", illegalArgumentException);
             Toast.makeText(context, illegalArgumentException.getMessage(), Toast.LENGTH_SHORT).show();
@@ -928,32 +812,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (NumberFormatException e) {
             Log.e(TAG, "applySettings: ", e);
         }
-    }
-
-    private void handlePurchase(com.android.billingclient.api.Purchase purchase) {
-        if (purchase.getPurchaseState() == com.android.billingclient.api.Purchase.PurchaseState.PURCHASED) {
-            if (!purchase.isAcknowledged()) {
-                AcknowledgePurchaseParams acknowledgePurchaseParams =
-                        AcknowledgePurchaseParams.newBuilder()
-                                .setPurchaseToken(purchase.getPurchaseToken())
-                                .build();
-                billingClient.acknowledgePurchase(acknowledgePurchaseParams, acknowledgePurchaseResponseListener);
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setMessage("Thank you for supporting the app!")
-                        .setTitle("Purchase Successful")
-                        .setIcon(R.drawable.vocal)
-                        .setPositiveButton("You're Welcome!", null);
-
-                AlertDialog dialog = builder.create();
-                dialog.show();
-            } else {
-                Log.d(TAG, "handlePurchase: purchase already acknowledged. Turning on pro features");
-                proVersion = true;
-            }
-        } else {
-            Log.d(TAG, "handlePurchase: not purchased (" + purchase.getPurchaseState() + ')');
-        }
-
     }
 
     public static String getPreset1 () {

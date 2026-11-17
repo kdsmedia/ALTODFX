@@ -1,10 +1,10 @@
-package org.acoustixaudio.tonesmith;
+package com.altomedia.altodfx;
 
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import org.acoustixaudio.tonesmith.MainActivity;
+import com.altomedia.altodfx.MainActivity;
 
 import java.util.ArrayList;
 

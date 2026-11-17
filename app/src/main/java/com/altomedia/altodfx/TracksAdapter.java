@@ -1,4 +1,4 @@
-package org.acoustixaudio.tonesmith;
+package com.altomedia.altodfx;
 
 import static android.os.Environment.DIRECTORY_DOCUMENTS;
 

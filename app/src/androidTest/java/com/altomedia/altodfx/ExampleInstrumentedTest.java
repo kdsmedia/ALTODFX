@@ -1,4 +1,4 @@
-package org.acoustixaudio.tonesmith;
+package com.altomedia.altodfx;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("org.acoustixaudio.tonesmith", appContext.getPackageName());
+        assertEquals("com.altomedia.altodfx", appContext.getPackageName());
     }
 }

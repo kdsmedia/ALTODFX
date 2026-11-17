@@ -1,11 +1,9 @@
-package org.acoustixaudio.tonesmith;
+package com.altomedia.altodfx;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -138,30 +136,6 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             });
 
-            Preference privacy = findPreference("privacy") ;
-            privacy.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    String url = "https://amprack.acoustixaudio.org/privacy.php";
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse(url));
-                    startActivity(i);
-                    return false;
-                }
-            });
-
-            Preference source = findPreference("source") ;
-            source.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    String url = "https://amprack.acoustixaudio.org/";
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse(url));
-                    startActivity(i);
-                    return false;
-                }
-            });
-
             Preference lamePreset = findPreference("lame_preset");
             lamePreset.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
@@ -173,7 +147,6 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             });
 
-            Preference buy = findPreference("purchase");
             Preference about = findPreference("about");
             about.setSummary(
                     new StringJoiner(" ")
@@ -183,19 +156,6 @@ public class SettingsActivity extends AppCompatActivity {
                             .add(String.valueOf(BuildConfig.VERSION_CODE))
                             .toString()
             );
-
-            if (MainActivity.proVersion) {
-                buy.setVisible(false);
-                about.setTitle(about.getTitle() + " Premium");
-            }
-
-            buy.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(@NonNull Preference preference) {
-                    startActivity(new Intent(settingsActivity, Purchase.class));
-                    return false;
-                }
-            });
         }
     }
 
