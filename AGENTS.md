@@ -202,6 +202,19 @@ target). Steps:
    presets valid (they are positional but only cover the earlier slots). Do not
    insert in the middle without rewriting every file in `assets/presets/`.
 
+## Version control
+
+- **Every change must be pushed to `origin/main` as soon as it is committed.**
+  The owner expects the remote to be current at all times; do not leave
+  committed work sitting only in the local clone.
+- Remote is `https://github.com/kdsmedia/ALTODFX.git`, branch `main`, public.
+- Push may fail with `403 Permission to kdsmedia/ALTODFX.git denied`. That is a
+  credential problem, not a git problem: the sandbox `GITHUB_TOKEN` is a
+  read-only GitHub App installation token, so it can clone and fetch but not
+  write. `OH_GIT_CREDENTIAL_ACCESS_TOKEN_GITHUB` is unset/invalid. To push,
+  a token with `contents: write` must be supplied; until then, report the block
+  instead of assuming the push succeeded.
+
 ## Signing (release)
 
 - `app/build.gradle` reads signing values from `keystore.properties`
