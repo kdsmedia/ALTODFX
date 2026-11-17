@@ -48,7 +48,10 @@ plus LADSPA/LV2 plugin support).
   `TYPE_USB_HEADSET`. `findDevice()` never returns a USB device.
 - Preference values for `input` and `output` are `auto`, `headset`, `phone`
   (see `arrays.xml`). `auto` prefers the headset jack and falls back to the
-  built-in mic/speaker. A device id of `0` means "leave the engine default".
+  built-in mic/speaker. `resolveInputDevice()`/`resolveOutputDevice()` return
+  `-1` when nothing matches; the engine maps `-1` to the system default device.
+  A device id of `0` is a valid device, so never use `0` as a "not found"
+  sentinel (an earlier bug did, which silently skipped real devices).
 - A `HeadsetReceiver` on `AudioManager.ACTION_HEADSET_PLUG` re-applies routing
   when the jack is plugged or unplugged.
 - Note: on many phones the headset jack is output-only (no headset mic), so the
@@ -63,9 +66,28 @@ plus LADSPA/LV2 plugin support).
   headset-jack interface free of hiss and mains hum.
 - Implemented in `app/src/main/cpp/FullDuplexPass.h` (`class InputConditioner`,
   used inside `onBothStreamsReady`). Sample rate is set from `Engine::openStreams`.
-- The input stream uses `oboe::InputPreset::Unprocessed`. Do **not** switch this
-  back to `VoicePerformance` / `VoiceCommunication`: those enable AGC and noise
-  suppression, which pump the level and add hiss on a guitar signal.
+- Stream opening is **layered and must stay that way** (`Engine::openOutputStream`
+  and `Engine::openInputStream`): Exclusive + LowLatency first, then Shared, then
+  `PerformanceMode::None`. After the first failed attempt the explicit device id
+  is dropped so later attempts use the system default. Forcing one combination
+  (Exclusive + LowLatency + AAudio + Unprocessed) makes many devices refuse to
+  open the stream, which shows up as "the app makes no sound at all".
+- The audio API is `oboe::AudioApi::Unspecified` so Oboe picks AAudio when
+  available and falls back to OpenSL ES. Do not force AAudio.
+- `AudioEngine.setPackageName()` must be called from `MainActivity` before
+  starting: input streams require it on Android 12+.
+- Input preset depends on the device. `InputPreset::Unprocessed` is used for the
+  built-in mic and USB so the guitar keeps its own character (no AGC or noise
+  suppression). For a wired/USB headset-style input (iRig in the 3.5 mm jack)
+  `InputPreset::VoiceRecognition` is tried first, because on many phones that is
+  what opens the TRRS microphone; `MainActivity.isHeadsetInputDevice()` decides
+  this via `AudioEngine.setHeadsetInput()`. Do **not** use `VoicePerformance` /
+  `VoiceCommunication`: those enable AGC and noise suppression.
+- The duplex scratch buffers (`FullDuplexPass::inSamples` / `raw`) must be
+  allocated **before** the streams start, and their byte size must include
+  `sizeof(float)`. Getting either wrong corrupts audio or the heap.
+- `Engine::onErrorAfterClose` reopens and restarts both streams on
+  `ErrorDisconnected` (device unplugged) under `mLock` with `try_lock`.
 - Controls: `AudioEngine.setInputConditionerEnabled(boolean)`,
   `setNoiseGateThreshold(float)`, `setInputHighpass(float)`, driven from
   `MainActivity.applyInputConditioner()` using the `input_clean`, `noise_gate`
