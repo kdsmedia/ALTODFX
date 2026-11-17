@@ -140,13 +140,11 @@ not to file recording.
 
 - Standard Android Gradle build (`./gradlew assembleDebug`,
   `./gradlew assembleRelease bundleRelease`).
-- The native engine source lives outside this repository: `app/build.gradle`
-  points CMake at `../../amp-rack/app/src/main/cpp/CMakeLists.txt`
-  (upstream <https://github.com/djshaji/amp-rack>). To build, clone that repo
-  next to this one as `amp-rack/`, then apply two local fixes to the clone:
-  add `include_directories(${CMAKE_CURRENT_SOURCE_DIR})` after
-  `project("amprack")`, and add `#include <vector>` + `#include <algorithm>`
-  to `app/src/main/cpp/lv2_ext.cpp`.
+- The native engine source is vendored in this repository under
+  `app/src/main/cpp/`, and `app/build.gradle` points CMake at
+  `src/main/cpp/CMakeLists.txt`. (Upstream is
+  <https://github.com/djshaji/amp-rack>; the local copy carries the fixes
+  needed to build here, so no separate `amp-rack/` clone is required.)
 - `AudioEngine.java` (`com.shajikhan.ladspa.amprack`) is vendored into
   `app/src/main/java/com/shajikhan/ladspa/amprack/` so the app module compiles
   without the `amp-rack` Gradle module. Keep it in sync with upstream.
