@@ -47,15 +47,4 @@
             android:summary="Removes rumble and 50/60 Hz mains hum"/>
     </PreferenceCategory>
 
-    <PreferenceCategory
-        android:title="Saving">
-
-        <DropDownPreference
-            android:title="MP3 Encode Preset"
-            android:key="lame_preset"
-            android:defaultValue="1001"
-            android:entries="@array/mp3_presets"
-            android:entryValues="@array/mp3_presets_values"/>
-    </PreferenceCategory>
-
 </PreferenceScreen>

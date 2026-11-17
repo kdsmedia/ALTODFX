@@ -19,8 +19,6 @@ static jmethodID gFindClassMethod;
 Engine::Engine () {
     assert(mOutputChannelCount == mInputChannelCount);
 //    queueManager = new LockFreeQueueManager ();
-    fileWriter = new FileWriter ();
-    queueManager.add_function (fileWriter->disk_write);
     queueManager.add_function (resetAtomPorts);
     queueManager.add_function (meter->updateMeterOutput);
 //    discoverPlugins();
@@ -64,11 +62,6 @@ bool Engine::setEffectOn(bool isOn) {
 //                mFullDuplexPass.queue = queueManager.process ;
                 mFullDuplexPass.lockFreeQueueManager = &queueManager ;
 
-                fileWriter->setSampleRate (mSampleRate);
-
-                int bufferSizeInFrames = mRecordingStream->getBufferSizeInFrames() ;
-                fileWriter->setBufferSize (mPlayStream->getBufferSizeInFrames()/mPlayStream->getChannelCount());
-
                 queueManager.init (mPlayStream->getBufferSizeInFrames()/mPlayStream->getChannelCount());
 
                 // The scratch buffers must exist before the streams start, or
@@ -93,17 +86,9 @@ bool Engine::setEffectOn(bool isOn) {
                 mFullDuplexPass.inSamples = static_cast<float *>(malloc(bufferBytes));
                 LOGD("[engine] allocated %d bytes to raw samples", static_cast<int>(bufferBytes));
                 mFullDuplexPass.raw = static_cast<float *>(malloc(bufferBytes));
-                fileWriter->setChannels(mOutputChannelCount);
 
                 mFullDuplexPass.start();
 
-                /*
-                if (mFullDuplexPass.recordingActive) {
-                    fileWriter->startRecording();
-                }
-                 */
-
-                meter->lastRecordedFileName = fileWriter->filename;
                 meter->jack_samplerate = mSampleRate ;
                 meter->lowLatency = lowLatencyMode ;
                 meter->enable();
@@ -112,11 +97,6 @@ bool Engine::setEffectOn(bool isOn) {
                 mIsEffectOn = isOn;
             }
         } else {
-            if (mFullDuplexPass.recordingActive) {
-                fileWriter->stopRecording() ;
-                mFullDuplexPass.recordingActive = false;
-            }
-
 //            LOGD("stopping meter");
             meter->stop();
 
@@ -710,17 +690,6 @@ void Engine::test () {
     }
 }
 
-int Engine::setTuner (buffer_t * buffer) {
-
-}
-
-
-int Engine::pushToVideo (AudioBuffer * buffer) {
-    if (pushAudio == nullptr) {
-
-    }
-
-}
 
 long Engine::getTimeStamp () {
     const oboe::ResultWithValue<oboe::FrameTimestamp> &frameTimeStamp = mRecordingStream->getTimestamp(

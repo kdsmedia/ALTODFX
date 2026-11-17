@@ -1,9 +1,6 @@
 package com.altomedia.altodfx;
 
 import static android.os.Environment.DIRECTORY_DOCUMENTS;
-import static android.os.Environment.DIRECTORY_MUSIC;
-import static android.os.Environment.DIRECTORY_RECORDINGS;
-import static android.os.Environment.getExternalStorageDirectory;
 
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -13,30 +10,19 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
-import com.google.android.exoplayer2.ExoPlayer;
-import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.PlaybackException;
-import com.google.android.exoplayer2.Player;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.snackbar.Snackbar;
 import com.shajikhan.ladspa.amprack.AudioEngine;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,7 +30,6 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -65,7 +50,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -74,16 +58,13 @@ import android.widget.ToggleButton;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -96,17 +77,13 @@ public class MainActivity extends AppCompatActivity {
     public static String TAG = "MainActivity";
     private static final int AUDIO_EFFECT_REQUEST = 0;
     boolean running = false;
-    ExoPlayer mediaPlayer = null;
-    String dir, filename, basename ;
     JSONObject allPlugins, ampModels;
     ArrayList<String> presetsForAdapter ;
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
-    LinearLayout lastRecordedBox;
     ArrayList <Integer> pluginIDs = new ArrayList<>();
     public static Context context;
     public static MainActivity mainActivity;
-    TextView lastFilename;
     String [] factoryPresets;
     String presetsDir ;
     RecyclerView recyclerView;
@@ -131,7 +108,6 @@ public class MainActivity extends AppCompatActivity {
         context = this;
 
 
-        mediaPlayer = new ExoPlayer.Builder(context).build();
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 //        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
@@ -139,19 +115,6 @@ public class MainActivity extends AppCompatActivity {
         ampModels = loadJSONFromAssetFile(this, "amps.json");
 
         defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-
-        AudioEngine.setExportFormat(2);
-        dir = getExternalFilesDir(DIRECTORY_MUSIC).getPath();
-        File folder = getExternalFilesDir(DIRECTORY_MUSIC);
-        if (! folder.exists()) {
-            if (!folder.mkdirs()) {
-                Toast.makeText(context, "Unable to create recording files directory", Toast.LENGTH_SHORT).show();
-            } else {
-                Log.d(TAG, String.format("created folder: %s", folder.getAbsolutePath()));
-            }
-        } else {
-            Log.d(TAG, String.format ("folder exists: %s", folder.getAbsolutePath()));
-        }
 
         presetsDir = getExternalFilesDir(DIRECTORY_DOCUMENTS).getPath();
         File pD = getExternalFilesDir(DIRECTORY_DOCUMENTS);
@@ -163,127 +126,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, String.format ("[preset dir]: %s", presetsDir));
         }
 
-        Log.d(TAG, String.format ("[dir]: %s", dir));
-        ToggleButton record = findViewById(R.id.record);
-        lastFilename = findViewById(R.id.last_filename);
-        ToggleButton lastPlayPause = findViewById(R.id.last_play);
-
-        lastFilename.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                lastPlayPause.performClick();
-            }
-        });
-
-        Button lastShare = findViewById(R.id.share_last);
-
-        lastShare.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (filename != null)
-                    shareFile(new File(filename + ".mp3"));
-            }
-        });
-        lastPlayPause.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    Log.i(TAG, "onCheckedChanged: playing " + filename);
-                    mediaPlayer.play();
-                    buttonView.setBackground(getResources().getDrawable(R.drawable.baseline_pause_24));
-                } else {
-                    Log.i(TAG, "onCheckedChanged: pause");
-                    mediaPlayer.pause();
-                    buttonView.setBackground(getResources().getDrawable(R.drawable.baseline_play_arrow_24));
-                }
-            }
-        });
-
-        mediaPlayer.addListener(new Player.Listener() {
-            @Override
-            public void onIsPlayingChanged(boolean isPlaying) {
-                Log.i(TAG, "onIsPlayingChanged: " + isPlaying);
-                Player.Listener.super.onIsPlayingChanged(isPlaying);
-                if (! isPlaying) {
-                    lastPlayPause.setChecked(false);
-                    MediaItem mediaItem = MediaItem.fromUri(filename + ".mp3");
-                    mediaPlayer.setMediaItem(mediaItem);
-                    mediaPlayer.prepare();
-                }
-            }
-        });
-
-        mediaPlayer.addListener(new Player.Listener() {
-            @Override
-            public void onPlayerError(PlaybackException error) {
-                Player.Listener.super.onPlayerError(error);
-                Log.e(TAG, "onPlayerError: ", error);
-                Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        mediaPlayer.addListener(new Player.Listener() {
-            @Override
-            public void onPlayerErrorChanged(@Nullable PlaybackException error) {
-                Player.Listener.super.onPlayerErrorChanged(error);
-                if (error != null)
-                    Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
-                Log.e(TAG, "onPlayerErrorChanged: ", error);
-            }
-        });
-
-        lastRecordedBox = findViewById(R.id.last_recorded_box);
         ToggleButton preview = findViewById(R.id.preview);
-
-        record.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    lastPlayPause.setChecked(false);
-//                    buttonView.setCompoundDrawablesWithIntrinsicBounds(null,getResources().getDrawable(R.drawable.stop1),null,null);
-
-                    SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH.mm.ss");
-                    Date date = new Date();
-                    basename = formatter.format(date);
-                    filename = new StringJoiner("/").add (dir).add (basename).toString();
-                    AudioEngine.setFileName(filename);
-                    applySettings();
-                    Log.d(TAG, String.format ("[filename]: %s", filename));
-
-//                    if (! running)
-//                        startEffect();
-
-
-                    if (! preview.isChecked())
-                        preview.setChecked(true);
-
-                    AudioEngine.toggleRecording(true);
-                    lastRecordedBox.setVisibility(View.GONE);
-                } else {
-//                    buttonView.setCompoundDrawablesWithIntrinsicBounds(null,getResources().getDrawable(R.drawable.record),null,null);
-
-                    if (! preview.isChecked ())
-                        stopEffect();
-
-                    lastFilename.setText(new File (filename).getName());
-                    lastRecordedBox.setVisibility(View.VISIBLE);
-
-                    MediaItem mediaItem = MediaItem.fromUri(filename + ".mp3");
-                    mediaPlayer.setMediaItem(mediaItem);
-                    mediaPlayer.prepare();
-
-                    Log.i(TAG, "onCheckedChanged: set media item " + filename);
-                }
-            }
-        });
-
-        Button renameLast = findViewById(R.id.last_edit);
-        renameLast.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                renameFile(basename, -1);
-            }
-        });
 
         Button deletePreset = findViewById(R.id.delete_preset);
         deletePreset.setOnClickListener(new View.OnClickListener() {
@@ -316,11 +159,7 @@ public class MainActivity extends AppCompatActivity {
 //                    buttonView.setButtonDrawable(getResources().getDrawable(R.drawable.preview));
                     AudioEngine.setOutputVolume(0f);
 
-                    if (! record.isChecked()) {
-                        stopEffect();
-                    } else {
-                        record.setChecked(false);
-                    }
+                    stopEffect();
                 }
             }
         });
@@ -356,15 +195,6 @@ public class MainActivity extends AppCompatActivity {
 //                Log.d(TAG, String.format ("[get preset]: %s", getPreset()));
 //                loadPreset(getPreset());
                 AudioEngine.printActiveChain();
-            }
-        });
-
-        Button recordings = findViewById(R.id.recordings);
-        recordings.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, Recordings.class);
-                startActivity(intent);
             }
         });
 
@@ -655,8 +485,6 @@ public class MainActivity extends AppCompatActivity {
                         String preset = getPreset();
                         String fullFilename = new StringJoiner ("/").add(presetsDir).add(filename).toString();
                         Log.d(TAG, String.format ("write preset: %s", fullFilename));
-                        File file = new File(dir, String.valueOf(fullFilename));
-                        FileWriter writer = null;
                         if (! Objects.requireNonNull(getExternalFilesDir(DIRECTORY_DOCUMENTS)).exists())
                             Log.e(TAG, "onClick: presets directory does not exist!" );
                         if (writeFile(fullFilename, preset)) {
@@ -722,35 +550,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public static void shareFile(File file) {
-        Intent intentShareFile = new Intent(Intent.ACTION_SEND);
-        Uri contentUri = null;
-        try {
-            contentUri = FileProvider.getUriForFile(context, "com.altomedia.altodfx.fileprovider", file);
-        } catch (IllegalArgumentException illegalArgumentException) {
-            Log.e(TAG, "shareFile: ", illegalArgumentException);
-            Toast.makeText(context, illegalArgumentException.getMessage(), Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        intentShareFile.setType("audio/*");
-        intentShareFile.putExtra(Intent.EXTRA_STREAM, contentUri);
-
-        intentShareFile.putExtra(Intent.EXTRA_SUBJECT,
-                "Sharing Audio File...");
-        intentShareFile.putExtra(Intent.EXTRA_TEXT, context.getResources().getString(R.string.app_name) + " recorded audio ...");
-
-        intentShareFile.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        context.startActivity(Intent.createChooser(intentShareFile, "Share Audio File"));
-
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        mediaPlayer.stop();
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -785,56 +584,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void renameFile (String oldName, int position) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        LayoutInflater inflater = mainActivity.getLayoutInflater();
-        LinearLayout linearLayout = (LinearLayout) inflater.inflate(R.layout.get_filename, null);
-        EditText textView = linearLayout.findViewById(R.id.filename);
-        TextView title = linearLayout.findViewById(R.id.preset_name);
-        title.setText("Enter filename");
-        textView.setText(oldName);
-
-
-        builder.setView(linearLayout)
-                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        CharSequence filename = textView.getText() ;
-                        if (filename.equals("") || filename == null || filename.equals(oldName))
-                            return;
-
-                        File file = new File(new StringJoiner("/").add (mainActivity.getExternalFilesDir(DIRECTORY_MUSIC).getAbsolutePath()).add (oldName).toString() + ".mp3");
-                        file.renameTo(new File(new StringJoiner("/").add (mainActivity.getExternalFilesDir(DIRECTORY_MUSIC).getAbsolutePath()).add (filename).toString() + ".mp3"))  ;
-                        mainActivity.lastFilename.setText(filename);
-                    }
-                })
-                .setNegativeButton("Cancel", null)
-                .setNeutralButton("Delete", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        AlertDialog.Builder b = new AlertDialog.Builder(context);
-                        b.setMessage("you want to delete this recording?")
-                                .setTitle("Are you sure")
-                                .setIcon(R.drawable.baseline_delete_forever_24)
-                                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        File f = new File (filename + ".mp3");
-                                        if (f.delete()) {
-                                            Toast.makeText(MainActivity.this, "Recording deleted", Toast.LENGTH_SHORT).show();
-                                            lastRecordedBox.setVisibility(View.GONE);
-                                        } else {
-                                            Toast.makeText(MainActivity.this, "Cannot delete file", Toast.LENGTH_SHORT).show();
-                                        }
-                                    }
-                                }).setNegativeButton("Cancel", null);
-                        b.show();
-                    }
-                });
-
-        builder.show();
-    }
-
     // Audio is routed through the wired headset jack (3.5 mm) by default and is
     // never routed through a USB audio device, so the app runs off the headset
     // hole only.
@@ -854,7 +603,6 @@ public class MainActivity extends AppCompatActivity {
             // InputPreset::VoiceRecognition on many phones to open the TRRS mic.
             AudioEngine.setHeadsetInput(isHeadsetInputDevice(inputDevice));
             applyInputConditioner();
-            AudioEngine.setLamePreset(Integer.parseInt(defaultSharedPreferences.getString("lame_preset", "1001")));
         } catch (NumberFormatException e) {
             Log.e(TAG, "applySettings: ", e);
         }
@@ -1093,8 +841,6 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 == PackageManager.PERMISSION_GRANTED) {
             startEffect();
-        } else {
-//            record.setChecked(false);
         }
     }
 }

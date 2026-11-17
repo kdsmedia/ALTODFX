@@ -2,8 +2,7 @@
 
 ALTODFX is a **guitar multi-effects processor** for Android. Plug your guitar
 (or an iRIG-style interface) into the phone's 3.5 mm headset jack and play
-through a chain of amps, cabinets and stompboxes. You can also **record audio
-directly to MP3** with the built-in high-precision recorder.
+through a chain of amps, cabinets and stompboxes.
 
 Audio input and output both run through the **single 3.5 mm headset jack** and
 are never routed through USB, so interfaces such as iRIG work as intended.
@@ -43,7 +42,6 @@ to the app's documents folder and appear in the same list.
 
 - **3.5 mm headset jack input and output** (iRIG-compatible), USB audio is
   deliberately excluded
-- Record directly to MP3
 - Floating point precision for high-quality audio processing
 - Ultra-low latency for a lag-free playing experience
 - Built-in noise gate and high-pass stage to keep the signal clean and free of

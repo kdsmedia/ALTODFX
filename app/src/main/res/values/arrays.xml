@@ -508,22 +508,6 @@
         <item>reply</item>
         <item>reply_all</item>
     </string-array>
-    <string-array name="mp3_presets">
-        <item>medium</item>
-        <item>standard</item>
-        <item>extreme</item>
-        <item>insane</item>
-        <item>are you nuts</item>
-        <item>seriously dont select this one</item>
-    </string-array>
-    <string-array name="mp3_presets_values">
-        <item>1006</item>
-        <item>1001</item>
-        <item>1002</item>
-        <item>1003</item>
-        <item>1003</item>
-        <item>1003</item>
-    </string-array>
 
     <string-array name="noise_gate_entries">
         <item>Off (very sensitive)</item>

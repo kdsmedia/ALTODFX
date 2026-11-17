@@ -21,7 +21,6 @@
 #include <cmath>
 #include "ladspa.h"
 #include "FullDuplexStream.h"
-#include "FileWriter.h"
 #include "Meter.h"
 #include "LockFreeQueue.h"
 
@@ -122,8 +121,6 @@ public:
     bool pushToLockFreeBeforeOutputVolume = false ;
     int activePlugins =  0 ;
     float * raw = NULL; // this will never be greater than this(TM)
-    bool recordingActive = false ;
-    bool triggerRecord = false ;
     bool bypass = false ;
     float * inSamples = NULL ;
 
@@ -238,21 +235,6 @@ public:
         auto elapsed = std::chrono::system_clock::now() - start ;
         LOGD("[%d] %lld ms", samplesToProcess, elapsed.count ()) ;
 #endif
-
-        /*
-        if (triggerRecord) {
-            LOGD("%f", data [0]);
-            if (data [0] > 0.1)
-                recordingActive = true ;
-            else
-                recordingActive = false ;
-        }
-         */
-
-//        if (recordingActive) {
-//            FileWriter::process(samplesToProcess, data);
-//        }
-
 
     }
 };

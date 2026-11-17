@@ -84,17 +84,6 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             });
 
-            Preference lamePreset = findPreference("lame_preset");
-            lamePreset.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    AudioEngine.setLamePreset(Integer.parseInt(
-                            PreferenceManager.getDefaultSharedPreferences(requireContext())
-                                    .getString("lame_preset", "1001")));
-                    return false;
-                }
-            });
-
             Preference about = findPreference("about");
             about.setSummary(
                     new StringJoiner(" ")

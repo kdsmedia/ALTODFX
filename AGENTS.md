@@ -4,10 +4,16 @@ Repository notes for AI agents working on ALTODFX.
 
 ## What this project is
 
-ALTODFX is an Android guitar multi-effects / voice-recorder app, forked from the
+ALTODFX is an Android guitar multi-effects app, forked from the
 open-source "Tonesmith" app by Acoustix Audio. It is a single-module Gradle
 project (`app`). The audio engine is native (`System.loadLibrary("amprack")`,
 plus LADSPA/LV2 plugin support).
+
+Audio/video recording was removed deliberately: there is no recorder UI, no
+`FileWriter`/`Export`/`OpusWorkaround` native code, and no encoder libraries
+(libsndfile, libopus, libopusenc, libmp3lame). The `RECORD_AUDIO` permission and
+`setRecordingDeviceId()` remain because they belong to the guitar capture path,
+not to file recording.
 
 ## Repository
 

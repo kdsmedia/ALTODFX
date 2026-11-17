@@ -21,7 +21,6 @@ extern "C" {
 #endif
 #include "LockFreeQueue.h"
 
-//#include "FileWriter.h"
 JNIEnv* getEnv() ;
 #define LOCK_FREE_SIZE 4096
 
@@ -59,7 +58,6 @@ class Meter {
 
 public:
     Meter(JavaVM *pVm);
-    std::string lastRecordedFileName ;
     static int jack_samplerate ;
     static bool tunerEnabled ;
     static jmethodID setMixerMeter ;
@@ -215,11 +213,7 @@ public:
     static _jfloatArray *jfloatArray1;
     static int jfloatArray1_Size;
     static int jfloatArray1_index;
-    static jmethodID pushToVideo;
-    static bool videoRecording;
 
-public:
-    static unsigned char *audioToVideoBytes;
 
     static float rms(float *v, int n);
 
