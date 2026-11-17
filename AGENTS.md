@@ -26,6 +26,11 @@ plus LADSPA/LV2 plugin support).
   `settings.gradle` -> `rootProject.name`).
 - App background image: `app/src/main/res/drawable/altomedia.png`
   (referenced from `activity_main.xml` and used for the main screen).
+- The launcher icon artwork is `Logo.png` at the repository root (a 1254x1254
+  full-bleed image). All icons under `app/src/main/res/mipmap-*` and
+  `app/src/main/ic_launcher-playstore.png` are generated from it; regenerate
+  them rather than editing the per-density files by hand. Keep the adaptive
+  foreground within the 66dp safe circle so the launcher mask never crops it.
 - The app is **fully free and offline**: Google Play Billing was removed
   entirely (no `com.android.billingclient` dependency, no `Purchase` activity,
   no premium gating). The `INTERNET` and `BILLING` permissions were removed.
