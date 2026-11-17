@@ -12,7 +12,10 @@ plus LADSPA/LV2 plugin support).
 ## Repository
 
 - Remote: `https://github.com/kdsmedia/ALTODFX.git`
-- **The repository is PUBLIC.** Never commit secrets.
+- **The repository is PUBLIC.** Everything committed here, including the
+  signing keystore and its passwords, is world-readable. The owner has
+  explicitly accepted this for the signing key (see "Signing" below); do not
+  add any *other* secret.
 - Default branch: `main`.
 
 ## Key facts / conventions
@@ -52,17 +55,32 @@ plus LADSPA/LV2 plugin support).
 - `app/build.gradle` reads signing values from `keystore.properties`
   (gradle `Properties`), keys: `storeFile`, `storePassword`, `keyAlias`,
   `keyPassword`.
-- `keystore.properties` and `*.jks` are git-ignored. The keystore file
-  `ALTOMEDIA.jks` must stay out of version control.
-- The keystore file is kept only in the local workspace (not in git). If a
-  fresh clone needs to build a release, the keystore and
-  `keystore.properties` must be supplied out of band.
+- **The signing keystore `ALTOMEDIA.jks` and `keystore.properties` are
+  committed to this repository at the owner's explicit request** (the
+  `*.jks` / `keystore.properties` lines were removed from `.gitignore`).
+  Because the repository is public, anyone can read the key and its passwords.
+  Treat the key as compromised and rotate it before any real distribution.
+- Keystore details: alias `kdsmedia`, validity 10000 days,
+  DN `CN=ALTOMEDIA, OU=Developer, O=ALTOMEDIA, L=Karawang, ST=Jawa Barat, C=ID`.
 
 ## Build
 
-- Standard Android Gradle build (`./gradlew assembleDebug`).
-- Note: a full build may fail because the native/CMake dependency `amp-rack`
-  is referenced from outside the repository and is not present here.
+- Standard Android Gradle build (`./gradlew assembleDebug`,
+  `./gradlew assembleRelease bundleRelease`).
+- The native engine source lives outside this repository: `app/build.gradle`
+  points CMake at `../../amp-rack/app/src/main/cpp/CMakeLists.txt`
+  (upstream <https://github.com/djshaji/amp-rack>). To build, clone that repo
+  next to this one as `amp-rack/`, then apply two local fixes to the clone:
+  add `include_directories(${CMAKE_CURRENT_SOURCE_DIR})` after
+  `project("amprack")`, and add `#include <vector>` + `#include <algorithm>`
+  to `app/src/main/cpp/lv2_ext.cpp`.
+- `AudioEngine.java` (`com.shajikhan.ladspa.amprack`) is vendored into
+  `app/src/main/java/com/shajikhan/ladspa/amprack/` so the app module compiles
+  without the `amp-rack` Gradle module. Keep it in sync with upstream.
+- Build outputs are committed under `app/release/`:
+  `app-release.apk` (signed) and `app-release.aab` (signed).
+- Toolchain used: JDK 21, Android SDK platform 34, build-tools 34.0.0,
+  NDK 26.1.10909125, CMake 3.22.1, AGP 8.3.0.
 
 ## Style
 
