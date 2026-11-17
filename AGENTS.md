@@ -163,3 +163,24 @@ not to file recording.
 
 - Keep changes minimal and focused.
 - Do not commit build outputs, caches, or secrets.
+
+## Known pitfalls (verified)
+
+- `getExternalFilesDir()` can return `null` (no external storage). Never chain
+  `.getPath()` / `.listFiles()` on it directly; check for `null` first. All
+  user-preset read/write/delete paths in `MainActivity` guard on `presetsDir`.
+- `Material Slider` validates its range lazily on the next layout pass, but
+  `setValueFrom` / `setValueTo` must be called **before** `setValue`, and the
+  value must lie inside `[valueFrom, valueTo]`. Setting a value outside the
+  current range throws `IllegalStateException` at layout time.
+- The per-effect preset bar is hidden by default and only shown when presets
+  were bound successfully, so an effect without an entry shows no empty strip.
+- `voice.json` control lists are a **curated subset** of the native control
+  vector (BYPASS and some other ports are omitted), so the slider count for an
+  effect is smaller than the port count used by `AudioEngine.setPluginControl`.
+  Factory preset `controls` arrays are written against the **full** native
+  vector (see `presets/*`), which is why their length differs from
+  `voice.json`'s control count; that is correct and not a bug.
+- `app/src/main/assets/lv2/mda-mda.so/mda.json` is malformed on purpose: it is
+  a raw fragment without the enclosing `{ }`. Nothing loads it (mda is not in
+  `voice.json` or the LV2 library array), so leave it alone.

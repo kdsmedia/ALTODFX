@@ -62,12 +62,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.StringJoiner;
 
 import android.Manifest;
@@ -117,10 +115,12 @@ public class MainActivity extends AppCompatActivity {
 
         defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
-        presetsDir = getExternalFilesDir(DIRECTORY_DOCUMENTS).getPath();
-        File pD = getExternalFilesDir(DIRECTORY_DOCUMENTS);
-        if (! pD.exists()) {
-            if (!pD.mkdirs()) {
+        File presetFolder = getExternalFilesDir(DIRECTORY_DOCUMENTS);
+        presetsDir = presetFolder != null ? presetFolder.getPath() : null;
+        if (presetFolder == null) {
+            Toast.makeText(context, "cannot create preset folder", Toast.LENGTH_SHORT).show();
+        } else if (! presetFolder.exists()) {
+            if (!presetFolder.mkdirs()) {
                 Toast.makeText(context, "cannot create preset folder", Toast.LENGTH_SHORT).show();
             }
         } else {
@@ -218,7 +218,11 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, String.format ("factory presets: %s", factoryPresets));
 
         presetsForAdapter = new ArrayList<>(Arrays.asList(factoryPresets));
-        File [] userPresets = getExternalFilesDir(DIRECTORY_DOCUMENTS).listFiles();
+        File userPresetFolder = getExternalFilesDir(DIRECTORY_DOCUMENTS);
+        File [] userPresets = userPresetFolder != null ? userPresetFolder.listFiles() : null;
+        if (userPresets == null) {
+            userPresets = new File[0];
+        }
         Log.d(TAG, String.format ("[user presets]: %d", userPresets.length));
         for (File file: userPresets) {
             presetsForAdapter.add(file.getName());
@@ -250,8 +254,20 @@ public class MainActivity extends AppCompatActivity {
                         loadPreset(preset);
                     recyclerView.scrollToPosition(0);
                 } else {
+                    if (presetsDir == null) {
+                        Log.e(TAG, "onItemSelected: preset folder unavailable");
+                        return;
+                    }
+
                     try {
-                        String preset = Files.readAllLines (Paths.get (new StringJoiner ("/").add(getExternalFilesDir(DIRECTORY_DOCUMENTS).getPath()).add((CharSequence) spinner.getAdapter().getItem(selection)).toString())).get(0).toString();
+                        File userPreset = new File(presetsDir, String.valueOf(spinner.getAdapter().getItem(selection)));
+                        List<String> lines = Files.readAllLines(userPreset.toPath());
+                        if (lines.isEmpty()) {
+                            Log.e(TAG, "onItemSelected: empty preset file " + userPreset);
+                            return;
+                        }
+
+                        String preset = lines.get(0);
                         Log.d(TAG, String.format ("[user preset] %d: %s", selection, preset));
                         dataAdapter.loadPreset(preset);
                     } catch (IOException e) {
@@ -480,14 +496,17 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         CharSequence filename = textView.getText() ;
-                        if (filename.equals("") || filename == null)
+                        if (filename == null || filename.length() == 0)
                             return;
+
+                        if (presetsDir == null) {
+                            Toast.makeText(MainActivity.this, "cannot create preset folder", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
 
                         String preset = getPreset();
                         String fullFilename = new StringJoiner ("/").add(presetsDir).add(filename).toString();
                         Log.d(TAG, String.format ("write preset: %s", fullFilename));
-                        if (! Objects.requireNonNull(getExternalFilesDir(DIRECTORY_DOCUMENTS)).exists())
-                            Log.e(TAG, "onClick: presets directory does not exist!" );
                         if (writeFile(fullFilename, preset)) {
                             Toast.makeText(MainActivity.this, "Saved preset to file: " + filename, Toast.LENGTH_SHORT).show();
                             addToSpinner(String.valueOf(filename));
@@ -533,8 +552,13 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        if (presetsDir == null) {
+            Toast.makeText(context, "cannot delete preset: preset folder unavailable", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String preset = spinner.getSelectedItem().toString();
-        File file = new File(new StringJoiner("/").add (getExternalFilesDir(DIRECTORY_DOCUMENTS).getPath()).add("/").add (preset).toString());
+        File file = new File(presetsDir, preset);
         Log.d(TAG, String.format ("[delete]: %s", file.getAbsolutePath()));
         if (!file.delete())
             Toast.makeText(context, "Cannot delete preset: " + preset, Toast.LENGTH_SHORT).show();
