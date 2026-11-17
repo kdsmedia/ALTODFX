@@ -76,6 +76,8 @@ public class AudioEngine {
     public static native void popFunction ();
     public static native void setRecordingDeviceId(int deviceId);
     public static native void setPlaybackDeviceId(int deviceId);
+    public static native void setPackageName(String packageName);
+    public static native void setHeadsetInput(boolean headset);
     public static native void delete();
     public static native void native_setDefaultStreamValues(int defaultSampleRate, int defaultFramesPerBurst);
 

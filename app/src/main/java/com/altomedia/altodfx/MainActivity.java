@@ -441,6 +441,10 @@ public class MainActivity extends AppCompatActivity {
         AudioEngine.setLazyLoad(true);
         AudioEngine.pushToLockFreeBeforeOutputVolumeAaaaaargh(true);
 
+        // Required for input streams on Android 12+: the platform checks the
+        // recorder identity when a capture stream is opened.
+        AudioEngine.setPackageName(getPackageName());
+
         AudioEngine.setOutputVolume(0f);
 
         availablePlugins = loadJSONFromAssetFile(this, "all_plugins.json");
@@ -842,17 +846,42 @@ public class MainActivity extends AppCompatActivity {
         try {
             int inputDevice = resolveInputDevice(input);
             int outputDevice = resolveOutputDevice(output);
-            if (inputDevice > 0) {
-                AudioEngine.setRecordingDeviceId(inputDevice);
-            }
-            if (outputDevice > 0) {
-                AudioEngine.setPlaybackDeviceId(outputDevice);
-            }
+            // A device id of 0 is valid, so "not found" is signalled with -1 and
+            // left unspecified so Oboe uses the system default device.
+            AudioEngine.setRecordingDeviceId(inputDevice);
+            AudioEngine.setPlaybackDeviceId(outputDevice);
+            // A wired headset input (iRig in the 3.5 mm jack) needs
+            // InputPreset::VoiceRecognition on many phones to open the TRRS mic.
+            AudioEngine.setHeadsetInput(isHeadsetInputDevice(inputDevice));
             applyInputConditioner();
             AudioEngine.setLamePreset(Integer.parseInt(defaultSharedPreferences.getString("lame_preset", "1001")));
         } catch (NumberFormatException e) {
             Log.e(TAG, "applySettings: ", e);
         }
+    }
+
+    // Returns true when the given input device id belongs to a wired or USB
+    // headset-style interface, which needs the voice-recognition preset to open
+    // its microphone on many devices.
+    private static boolean isHeadsetInputDevice (int deviceId) {
+        if (deviceId < 0) {
+            return false;
+        }
+        AudioManager manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        if (manager == null) {
+            return false;
+        }
+        for (AudioDeviceInfo device : manager.getDevices(AudioManager.GET_DEVICES_INPUTS)) {
+            if (device.getId() == deviceId) {
+                int type = device.getType();
+                return type == AudioDeviceInfo.TYPE_WIRED_HEADSET
+                        || type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES
+                        || type == AudioDeviceInfo.TYPE_USB_HEADSET
+                        || type == AudioDeviceInfo.TYPE_USB_DEVICE
+                        || type == AudioDeviceInfo.TYPE_USB_ACCESSORY;
+            }
+        }
+        return false;
     }
 
     // The front-end conditioner removes DC offset, mains hum and hiss before the
@@ -870,17 +899,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static void applyInputDevice (String preference) {
-        int device = resolveInputDevice(preference);
-        if (device > 0) {
-            AudioEngine.setRecordingDeviceId(device);
-        }
+        AudioEngine.setRecordingDeviceId(resolveInputDevice(preference));
+        AudioEngine.setHeadsetInput(isHeadsetInputDevice(resolveInputDevice(preference)));
     }
 
     public static void applyOutputDevice (String preference) {
-        int device = resolveOutputDevice(preference);
-        if (device > 0) {
-            AudioEngine.setPlaybackDeviceId(device);
-        }
+        AudioEngine.setPlaybackDeviceId(resolveOutputDevice(preference));
     }
 
     private static boolean isUsbAudioDevice (AudioDeviceInfo device) {
@@ -908,12 +932,12 @@ public class MainActivity extends AppCompatActivity {
     private static int resolveInputDevice (String preference) {
         AudioManager manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         if (manager == null) {
-            return 0;
+            return -1;
         }
 
         if ("phone".equals(preference)) {
             AudioDeviceInfo device = findDevice(manager, true, new int [] {AudioDeviceInfo.TYPE_BUILTIN_MIC});
-            return device != null ? device.getId() : 0;
+            return device != null ? device.getId() : -1;
         }
 
         AudioDeviceInfo headset = findDevice(manager, true, new int [] {
@@ -928,23 +952,23 @@ public class MainActivity extends AppCompatActivity {
 
         if ("headset".equals(preference)) {
             Toast.makeText(context, "No headset detected. Connect a wired headset to the headphone jack.", Toast.LENGTH_LONG).show();
-            return 0;
+            return -1;
         }
 
         // Auto: fall back to the built-in microphone, never a USB device.
         AudioDeviceInfo builtIn = findDevice(manager, true, new int [] {AudioDeviceInfo.TYPE_BUILTIN_MIC});
-        return builtIn != null ? builtIn.getId() : 0;
+        return builtIn != null ? builtIn.getId() : -1;
     }
 
     private static int resolveOutputDevice (String preference) {
         AudioManager manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         if (manager == null) {
-            return 0;
+            return -1;
         }
 
         if ("phone".equals(preference)) {
             AudioDeviceInfo device = findDevice(manager, false, new int [] {AudioDeviceInfo.TYPE_BUILTIN_SPEAKER});
-            return device != null ? device.getId() : 0;
+            return device != null ? device.getId() : -1;
         }
 
         AudioDeviceInfo headset = findDevice(manager, false, new int [] {
@@ -959,12 +983,12 @@ public class MainActivity extends AppCompatActivity {
 
         if ("headset".equals(preference)) {
             Toast.makeText(context, "No headset detected. Connect headphones to the headphone jack.", Toast.LENGTH_LONG).show();
-            return 0;
+            return -1;
         }
 
         // Auto: fall back to the built-in speaker, never a USB device.
         AudioDeviceInfo builtIn = findDevice(manager, false, new int [] {AudioDeviceInfo.TYPE_BUILTIN_SPEAKER});
-        return builtIn != null ? builtIn.getId() : 0;
+        return builtIn != null ? builtIn.getId() : -1;
     }
 
     public static String getPreset1 () {

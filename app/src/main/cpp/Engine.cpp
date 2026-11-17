@@ -50,6 +50,9 @@ bool Engine::setEffectOn(bool isOn) {
     bool success = true;
     if (isOn != mIsEffectOn) {
         if (isOn) {
+            // Reopening and closing the streams must not race with the
+            // disconnect recovery path, which also rebuilds them.
+            std::lock_guard<std::mutex> guard(mLock);
             success = openStreams() == oboe::Result::OK;
             if (success) {
                 /*
@@ -60,26 +63,21 @@ bool Engine::setEffectOn(bool isOn) {
 
 //                mFullDuplexPass.queue = queueManager.process ;
                 mFullDuplexPass.lockFreeQueueManager = &queueManager ;
-                mFullDuplexPass.start();
 
                 fileWriter->setSampleRate (mSampleRate);
 
-//                char buffer [80];
-//
-//                time_t rawtime;
-//                struct tm * timeinfo;
-//                time (&rawtime);
-//                timeinfo = localtime (&rawtime);
-//
-//                strftime (buffer,80,"%d-%m-%y__%I.%M%p",timeinfo);
-
-//                fileWriter->setFileName(externalStoragePath + std::string ("/AmpRack/") + std::string (buffer)) ;
-//                fileWriter->setFileName(externalStoragePath + "/" + std::string (buffer)) ;
-//                fileWriter->setBufferSize(mFullDuplexPass.mBufferSize);
                 int bufferSizeInFrames = mRecordingStream->getBufferSizeInFrames() ;
                 fileWriter->setBufferSize (mPlayStream->getBufferSizeInFrames()/mPlayStream->getChannelCount());
 
                 queueManager.init (mPlayStream->getBufferSizeInFrames()/mPlayStream->getChannelCount());
+
+                // The scratch buffers must exist before the streams start, or
+                // the first audio callback writes through a null pointer.
+                // Note: do not assign mBufferSize here, because
+                // FullDuplexStream::start() only allocates its input buffer
+                // when the computed size is strictly larger.
+                const int32_t scratchSamples = mPlayStream->getBufferCapacityInFrames()
+                        * mPlayStream->getChannelCount();
 
                 if (mFullDuplexPass.inSamples != NULL)
                     free (static_cast<void *>(mFullDuplexPass.inSamples));
@@ -87,12 +85,18 @@ bool Engine::setEffectOn(bool isOn) {
                 if (mFullDuplexPass.raw != NULL)
                     free (static_cast<void *>(mFullDuplexPass.raw));
 
-                mFullDuplexPass.inSamples = static_cast<float *>(malloc(mFullDuplexPass.mBufferSize));
-                LOGD("[engine] allocated %d bytes to raw samples", mFullDuplexPass.mBufferSize);
-                mFullDuplexPass.raw = static_cast<float *>(malloc(mFullDuplexPass.mBufferSize));
-//                for (int i = 0 ; i < mFullDuplexPass.mBufferSize; i ++)
-//                    mFullDuplexPass.raw [i] = 0.0f ;
+                // The buffer holds samples, so the byte size must include
+                // sizeof(float); allocating one byte per sample overflowed the
+                // heap on every audio callback.
+                const size_t bufferBytes =
+                        static_cast<size_t>(scratchSamples) * sizeof(float);
+                mFullDuplexPass.inSamples = static_cast<float *>(malloc(bufferBytes));
+                LOGD("[engine] allocated %d bytes to raw samples", static_cast<int>(bufferBytes));
+                mFullDuplexPass.raw = static_cast<float *>(malloc(bufferBytes));
                 fileWriter->setChannels(mOutputChannelCount);
+
+                mFullDuplexPass.start();
+
                 /*
                 if (mFullDuplexPass.recordingActive) {
                     fileWriter->startRecording();
@@ -117,7 +121,10 @@ bool Engine::setEffectOn(bool isOn) {
             meter->stop();
 
             mFullDuplexPass.stop();
-            closeStreams();
+            {
+                std::lock_guard<std::mutex> guard(mLock);
+                closeStreams();
+            }
             mIsEffectOn = isOn;
         }
     }
@@ -149,49 +156,53 @@ void Engine::closeStreams() {
 
 oboe::Result  Engine::openStreams() {
     IN ;
-    // Note: The order of stream creation is important. We create the playback
-    // stream first, then use properties from the playback stream
-    // (e.g. sample rate) to create the recording stream. By matching the
-    // properties we should get the lowest latency path
-    oboe::AudioStreamBuilder inBuilder, outBuilder;
-    setupPlaybackStreamParameters(&outBuilder);
-    oboe::Result result = outBuilder.openStream(mPlayStream);
+    // The order of stream creation is important. We open the playback stream
+    // first, then reuse its sample rate for the recording stream. Matching the
+    // properties keeps both streams on the same low-latency path.
+    //
+    // Each stream is opened through a layered fallback ladder. Forcing a single
+    // combination (Exclusive + LowLatency + AAudio + Unprocessed) makes many
+    // devices refuse to open the stream, which shows up as "the app makes no
+    // sound at all".
+    oboe::AudioStreamBuilder outBuilder;
+    if (!mPackageName.empty()) {
+        outBuilder.setPackageName(mPackageName);
+    }
+    oboe::Result result = openOutputStream(outBuilder);
     if (result != oboe::Result::OK) {
         LOGE("Failed to open output stream. Error %s", oboe::convertToText(result));
+        mPlayStream.reset();
         mSampleRate = oboe::kUnspecified;
         OUT ;
         return result;
-    } else {
-        // The input stream needs to run at the same sample rate as the output.
-        mSampleRate = mPlayStream->getSampleRate();
     }
+    // The input stream needs to run at the same sample rate as the output.
+    mSampleRate = mPlayStream->getSampleRate();
     warnIfNotLowLatency(mPlayStream);
 
-    setupRecordingStreamParameters(&inBuilder, mSampleRate);
-//    inBuilder.setBufferCapacityInFrames(160);
-//    inBuilder.setFramesPerDataCallback(160);
-//    inBuilder.setFramesPerCallback(160);
-
-    result = inBuilder.openStream(mRecordingStream);
-
-    latencyTuner = new oboe::LatencyTuner ( *mRecordingStream);
-//    latencyTuner->setMinimumBufferSize(160);
-//    mRecordingStream->setBufferSizeInFrames(80);
-    latencyTuner->tune();
-//    mRecordingStream->setBufferSizeInFrames(80);
+    oboe::AudioStreamBuilder inBuilder;
+    if (!mPackageName.empty()) {
+        // Required for input streams on Android 12+ (the platform checks the
+        // recorder identity when a capture stream is opened).
+        inBuilder.setPackageName(mPackageName);
+    }
+    result = openInputStream(inBuilder, mSampleRate,
+                             mPlayStream->getBufferCapacityInFrames());
     if (result != oboe::Result::OK) {
         LOGE("Failed to open input stream. Error %s", oboe::convertToText(result));
+        mRecordingStream.reset();
         closeStream(mPlayStream);
+        mSampleRate = oboe::kUnspecified;
         OUT ;
         return result;
     }
-
-    latencyTunerOut = new oboe::LatencyTuner ( *mPlayStream);
-    latencyTunerOut->tune();
     warnIfNotLowLatency(mRecordingStream);
 
-//    mRecordingStream->setBufferSizeInFrames(mRecordingStream->getFramesPerBurst());
-//    mPlayStream->setBufferSizeInFrames(mPlayStream->getFramesPerBurst());
+    latencyTuner = new oboe::LatencyTuner ( *mRecordingStream);
+    latencyTuner->tune();
+    latencyTunerOut = new oboe::LatencyTuner ( *mPlayStream);
+    latencyTunerOut->tune();
+
     mRecordingStream->setBufferSizeInFrames(mRecordingStream->getFramesPerBurst() * 2);
     mPlayStream->setBufferSizeInFrames(mPlayStream->getFramesPerBurst() * 2);
     mFullDuplexPass.setInputStream(mRecordingStream);
@@ -219,74 +230,123 @@ oboe::Result  Engine::openStreams() {
 }
 
 /**
- * Sets the stream parameters which are specific to recording,
- * including the sample rate which is determined from the
- * playback stream.
- *
- * @param builder The recording stream builder
- * @param sampleRate The desired sample rate of the recording stream
+ * Opens the playback stream with a layered fallback. Exclusive + LowLatency is
+ * tried first for the best latency; if the device refuses it we drop to Shared,
+ * then to PerformanceMode::None, and finally let the device pick its own sample
+ * rate. After the first failed attempt the explicit device id is discarded so
+ * the remaining attempts use the system default device.
  */
-oboe::AudioStreamBuilder *Engine::setupRecordingStreamParameters(
-        oboe::AudioStreamBuilder *builder, int32_t sampleRate) {
-    // This sample uses blocking read() because we don't specify a callback
-    builder->setDeviceId(mRecordingDeviceId)
-            ->setDirection(oboe::Direction::Input)
-            ->setSampleRate(mSampleRate)
-//            ->setSampleRateConversionQuality(oboe::SampleRateConversionQuality::Medium)
-//            ->setFormat(oboe::AudioFormat::I16)
-            ->setChannelCount(mInputChannelCount);
-    return setupCommonStreamParameters(builder);
+oboe::Result Engine::openOutputStream(oboe::AudioStreamBuilder &builder) {
+    int32_t deviceId = mPlaybackDeviceId;
+    if (deviceId < 0) {
+        deviceId = oboe::kUnspecified;
+    }
+
+    struct Attempt {
+        oboe::SharingMode sharing;
+        oboe::PerformanceMode performance;
+        int32_t sampleRate; // 0 = let the device choose (kUnspecified).
+    };
+    const Attempt attempts[] = {
+            {oboe::SharingMode::Exclusive, oboe::PerformanceMode::LowLatency, oboe::kUnspecified},
+            {oboe::SharingMode::Shared, oboe::PerformanceMode::LowLatency, oboe::kUnspecified},
+            {oboe::SharingMode::Shared, oboe::PerformanceMode::None, oboe::kUnspecified},
+    };
+
+    oboe::Result lastResult = oboe::Result::ErrorInternal;
+    for (const auto &attempt : attempts) {
+        builder.setDirection(oboe::Direction::Output)
+                ->setDataCallback(this)
+                ->setErrorCallback(this)
+                ->setAudioApi(mAudioApi)
+                ->setDeviceId(deviceId)
+                ->setSharingMode(attempt.sharing)
+                ->setPerformanceMode(attempt.performance)
+                ->setFormat(mFormat)
+                ->setChannelCount(mOutputChannelCount)
+                ->setSampleRate(attempt.sampleRate)
+                // Allow conversion so devices that only accept I16 / a fixed
+                // rate still get a stream instead of failing outright.
+                ->setFormatConversionAllowed(true)
+                ->setChannelConversionAllowed(true)
+                ->setSampleRateConversionQuality(oboe::SampleRateConversionQuality::Medium);
+        lastResult = builder.openStream(mPlayStream);
+        if (lastResult == oboe::Result::OK) {
+            return lastResult;
+        }
+        LOGE("Open output failed (sharing=%d, perf=%d): %s",
+             static_cast<int>(attempt.sharing), static_cast<int>(attempt.performance),
+             oboe::convertToText(lastResult));
+        mPlayStream.reset();
+        // The specific device is gone; use the system default from now on.
+        deviceId = oboe::kUnspecified;
+    }
+    return lastResult;
 }
 
 /**
- * Sets the stream parameters which are specific to playback, including device
- * id and the dataCallback function, which must be set for low latency
- * playback.
- * @param builder The playback stream builder
+ * Opens the recording stream with a layered fallback. For a headset-style input
+ * (iRig in the 3.5 mm jack) InputPreset::VoiceRecognition is tried first because
+ * on many phones that is the preset that opens the TRRS microphone; the built-in
+ * mic and USB inputs keep InputPreset::Unprocessed so the guitar keeps its own
+ * character (no AGC or noise suppression).
  */
-oboe::AudioStreamBuilder *Engine::setupPlaybackStreamParameters(
-        oboe::AudioStreamBuilder *builder) {
-    builder->setDataCallback(this)
-            ->setErrorCallback(this)
-            ->setDeviceId(mPlaybackDeviceId)
-            ->setDirection(oboe::Direction::Output)
-//            ->setSampleRate(48000)
-            /* fixme:
-             * we do this because
-             * 1. sample rate on Android is *almost always™ 48000
-             * 2. Android AAC encoder does not support sample rate > 48000
-             * 3. Even if it did, it might not be *that* much of an enhancement
-             *    in order for it to justify complex resampling in real time
-             */
-            ->setChannelCount(mOutputChannelCount);
+oboe::Result Engine::openInputStream(oboe::AudioStreamBuilder &builder,
+                                     int32_t sampleRate,
+                                     int32_t outputCapacity) {
+    int32_t deviceId = mRecordingDeviceId;
+    if (deviceId < 0) {
+        deviceId = oboe::kUnspecified;
+    }
+    const bool headset = mHeadsetInput;
 
-    return setupCommonStreamParameters(builder);
-}
+    struct Attempt {
+        oboe::SharingMode sharing;
+        oboe::PerformanceMode performance;
+        oboe::InputPreset preset;
+    };
+    const Attempt attempts[] = {
+            {oboe::SharingMode::Exclusive, oboe::PerformanceMode::LowLatency,
+             headset ? oboe::InputPreset::VoiceRecognition : oboe::InputPreset::Unprocessed},
+            {oboe::SharingMode::Exclusive, oboe::PerformanceMode::LowLatency,
+             oboe::InputPreset::Generic},
+            {oboe::SharingMode::Shared, oboe::PerformanceMode::LowLatency,
+             oboe::InputPreset::Generic},
+            {oboe::SharingMode::Shared, oboe::PerformanceMode::None,
+             oboe::InputPreset::Generic},
+    };
 
-/**
- * Set the stream parameters which are common to both recording and playback
- * streams.
- * @param builder The playback or recording stream builder
- */
-oboe::AudioStreamBuilder *Engine::setupCommonStreamParameters(
-        oboe::AudioStreamBuilder *builder) {
-    // We request EXCLUSIVE mode since this will give us the lowest possible
-    // latency.
-    // If EXCLUSIVE mode isn't available the builder will fall back to SHARED
-    // mode.
-    builder->setAudioApi(mAudioApi)
-            ->setFormat(mFormat)
-            ->setChannelConversionAllowed(true)
-//            ->setSampleRateConversionQuality(oboe::SampleRateConversionQuality::Fastest)
-            ->setFormatConversionAllowed(true)
-            ->setSharingMode(oboe::SharingMode::Exclusive)
-            // A guitar into a headset-jack interface needs the unprocessed
-            // signal path. VoicePerformance / VoiceCommunication switch on AGC
-            // and noise suppression, which pump the level and add hiss.
-            ->setInputPreset(oboe::InputPreset::Unprocessed)
-//            ->setPerformanceMode(static_cast<oboe::PerformanceMode>(lowLatency));
-            ->setPerformanceMode(oboe::PerformanceMode::LowLatency);
-    return builder;
+    oboe::Result lastResult = oboe::Result::ErrorInternal;
+    for (const auto &attempt : attempts) {
+        builder.setDirection(oboe::Direction::Input)
+                ->setErrorCallback(this)
+                ->setAudioApi(mAudioApi)
+                ->setDeviceId(deviceId)
+                ->setSharingMode(attempt.sharing)
+                ->setPerformanceMode(attempt.performance)
+                ->setFormat(mFormat)
+                ->setChannelCount(mInputChannelCount)
+                ->setSampleRate(sampleRate)
+                ->setInputPreset(attempt.preset)
+                ->setFormatConversionAllowed(true)
+                ->setChannelConversionAllowed(true)
+                ->setSampleRateConversionQuality(oboe::SampleRateConversionQuality::Medium);
+        // Give the input twice the output capacity so it does not underrun.
+        if (outputCapacity > 0) {
+            builder.setBufferCapacityInFrames(outputCapacity * 2);
+        }
+        lastResult = builder.openStream(mRecordingStream);
+        if (lastResult == oboe::Result::OK) {
+            return lastResult;
+        }
+        LOGE("Open input failed (sharing=%d, preset=%d): %s",
+             static_cast<int>(attempt.sharing), static_cast<int>(attempt.preset),
+             oboe::convertToText(lastResult));
+        mRecordingStream.reset();
+        // The specific device is gone; use the system default from now on.
+        deviceId = oboe::kUnspecified;
+    }
+    return lastResult;
 }
 
 /**
@@ -383,6 +443,31 @@ void Engine::onErrorAfterClose(oboe::AudioStream *oboeStream,
     LOGE("%s stream Error after close: %s",
          oboe::convertToText(oboeStream->getDirection()),
          oboe::convertToText(error));
+
+    // A device was unplugged or reconnected (for example the guitar interface
+    // was pulled out). Oboe has already closed the stream, so reopen both
+    // streams to keep audio alive instead of leaving the app silent.
+    if (error != oboe::Result::ErrorDisconnected || !mIsEffectOn) {
+        return;
+    }
+    LOGI("Audio device disconnected, reopening streams");
+
+    // A second thread (start/stop) may be holding the engine; skip recovery
+    // then, because that thread is already rebuilding the streams.
+    std::unique_lock<std::mutex> guard(mLock, std::try_to_lock);
+    if (!guard.owns_lock()) {
+        return;
+    }
+
+    closeStreams();
+    mIsEffectOn = false;
+    if (openStreams() == oboe::Result::OK && mFullDuplexPass.start() == oboe::Result::OK) {
+        mIsEffectOn = true;
+        LOGI("Audio device reconnected, streams reopened");
+    } else {
+        LOGE("Failed to reopen streams after device disconnect");
+        closeStreams();
+    }
 }
 
 void Engine::addPluginToRackLazy(char* library, int pluginIndex, SharedLibrary::PluginType _type) {

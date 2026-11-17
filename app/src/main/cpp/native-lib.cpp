@@ -126,6 +126,39 @@ Java_com_shajikhan_ladspa_amprack_AudioEngine_setPlaybackDeviceId(JNIEnv *env, j
 }
 extern "C"
 JNIEXPORT void JNICALL
+Java_com_shajikhan_ladspa_amprack_AudioEngine_setPackageName(JNIEnv *env, jclass clazz,
+                                                            jstring package_name) {
+    if (engine == nullptr) {
+        LOGE(
+                "Engine is null, you must call createEngine before calling this "
+                "method");
+        return;
+    }
+    if (package_name == nullptr) {
+        return;
+    }
+
+    const char *chars = env->GetStringUTFChars(package_name, nullptr);
+    if (chars != nullptr) {
+        engine->setPackageName(std::string(chars));
+        env->ReleaseStringUTFChars(package_name, chars);
+    }
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_shajikhan_ladspa_amprack_AudioEngine_setHeadsetInput(JNIEnv *env, jclass clazz,
+                                                             jboolean headset) {
+    if (engine == nullptr) {
+        LOGE(
+                "Engine is null, you must call createEngine before calling this "
+                "method");
+        return;
+    }
+
+    engine->setHeadsetInput(headset == JNI_TRUE);
+}
+extern "C"
+JNIEXPORT void JNICALL
 Java_com_shajikhan_ladspa_amprack_AudioEngine_delete(JNIEnv *env, jclass clazz) {
     if (engine) {
         engine->setEffectOn(false);

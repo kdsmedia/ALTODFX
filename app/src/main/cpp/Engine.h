@@ -4,6 +4,7 @@
 #include <oboe/Oboe.h>
 #include <string>
 #include <thread>
+#include <mutex>
 #include "FullDuplexPass.h"
 #include "SharedLibrary.h"
 #include "Plugin.h"
@@ -37,6 +38,15 @@ public:
     void setRecordingDeviceId(int32_t deviceId);
 
     void setPlaybackDeviceId(int32_t deviceId);
+
+    // Package name is required for input streams on Android 12+ (the platform
+    // validates the recorder identity when opening a capture stream).
+    void setPackageName(const std::string &packageName) { mPackageName = packageName; }
+
+    // True when the selected input is a wired/USB headset-style interface
+    // (for example an iRig plugged into the 3.5 mm jack). Such devices need
+    // InputPreset::VoiceRecognition on many phones to open the TRRS mic.
+    void setHeadsetInput(bool headset) { mHeadsetInput = headset; }
 
     bool setEffectOn(bool isOn);
     /*
@@ -94,19 +104,26 @@ public:
 private:
     int32_t           mRecordingDeviceId = oboe::kUnspecified;
     int32_t           mPlaybackDeviceId = oboe::kUnspecified;
-    oboe::AudioApi    mAudioApi = oboe::AudioApi::AAudio;
+    // Unspecified lets Oboe pick AAudio when available and fall back to
+    // OpenSL ES automatically; forcing AAudio made many devices fail to open.
+    oboe::AudioApi    mAudioApi = oboe::AudioApi::Unspecified;
+    std::string       mPackageName;
+    bool              mHeadsetInput = false;
+    // Guards openStreams/closeStreams against concurrent start/stop and the
+    // disconnect recovery path in onErrorAfterClose.
+    std::mutex        mLock;
     oboe::Result openStreams();
 
     void closeStreams();
 
     void closeStream(std::shared_ptr<oboe::AudioStream> &stream);
 
-    oboe::AudioStreamBuilder *setupCommonStreamParameters(
-            oboe::AudioStreamBuilder *builder);
-    oboe::AudioStreamBuilder *setupRecordingStreamParameters(
-            oboe::AudioStreamBuilder *builder, int32_t sampleRate);
-    oboe::AudioStreamBuilder *setupPlaybackStreamParameters(
-            oboe::AudioStreamBuilder *builder);
+    oboe::Result openOutputStream(oboe::AudioStreamBuilder &builder);
+
+    oboe::Result openInputStream(oboe::AudioStreamBuilder &builder,
+                                 int32_t sampleRate,
+                                 int32_t outputCapacity);
+
     void warnIfNotLowLatency(std::shared_ptr<oboe::AudioStream> &stream);
 
 
