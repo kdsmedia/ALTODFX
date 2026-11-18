@@ -13,12 +13,80 @@ void replaceAll(std::string& str, const std::string& from, const std::string& to
     }
 }
 
+// Builds the right-channel instance for a mono plugin. Controls are shared
+// with the first instance so both channels follow the same knob values; the
+// audio ports are deliberately left unconnected because the host rewires them
+// on every block.
+void Plugin::createSecondHandle () {
+    if (handle == nullptr || !isMono ())
+        return ;
+
+    if (type == SharedLibrary::LADSPA) {
+        handle2 = (LADSPA_Handle *) descriptor->instantiate (descriptor, sampleRate);
+        if (handle2 == nullptr) {
+            LOGE ("[%s] could not instantiate a second handle", descriptor->Name);
+            return ;
+        }
+
+        for (int i = 0 ; i < descriptor->PortCount ; i ++) {
+            LADSPA_PortDescriptor port = descriptor->PortDescriptors [i] ;
+            if (LADSPA_IS_PORT_AUDIO (port))
+                continue ; // the host connects these every block
+
+            // Share the first instance's control memory so both channels read
+            // the same knob values; any other (hidden or output) control port
+            // still needs a valid pointer or run() may dereference null.
+            LADSPA_Data * shared = &dummy_output_control_port ;
+            for (PluginControl * control : pluginControls) {
+                if ((int) control->port == i && LADSPA_IS_PORT_INPUT (port)) {
+                    shared = control->def ;
+                    break ;
+                }
+            }
+            descriptor->connect_port (handle2, i, shared);
+        }
+
+        if (descriptor->activate)
+            descriptor->activate (handle2);
+    } else if (type == SharedLibrary::LV2) {
+        std::string lib_path = sharedLibrary->LIBRARY_PATH + "/" + sharedLibrary->so_file + ".lv2/" ;
+        handle2 = (LADSPA_Handle *) lv2Descriptor->instantiate (lv2Descriptor, sampleRate,
+                                                                lib_path.c_str (), features.data ());
+        if (handle2 == nullptr) {
+            LOGE ("[%s] could not instantiate a second handle", lv2Descriptor->URI);
+            return ;
+        }
+
+        for (PluginControl * control : pluginControls) {
+            lv2Descriptor->connect_port (handle2, control->port, control->def);
+        }
+        // Mirror the atom ports the first instance connected (file in, notify
+        // out) so the right channel can also load an impulse/amp file.
+        if (filePort != nullptr && filePortNum != -1)
+            lv2Descriptor->connect_port (handle2, filePortNum, filePort);
+        if (notifyPort != nullptr && notifyPortNum != -1)
+            lv2Descriptor->connect_port (handle2, notifyPortNum, notifyPort);
+
+        if (lv2Descriptor->activate)
+            lv2Descriptor->activate (handle2);
+    }
+}
+
 void Plugin::free () {
     IN
-    if (type == SharedLibrary::LADSPA)
+    if (type == SharedLibrary::LADSPA) {
+        if (handle2 != nullptr) {
+            descriptor->cleanup (handle2);
+            handle2 = nullptr ;
+        }
         descriptor->cleanup (handle);
-    else
+    } else {
+        if (handle2 != nullptr) {
+            lv2Descriptor->cleanup (handle2);
+            handle2 = nullptr ;
+        }
         lv2Descriptor->cleanup (handle);
+    }
     OUT
 }
 
@@ -248,6 +316,7 @@ void Plugin::load () {
             pluginControls.at(pluginIndex)->urid = ampAtom->urid_map->map (ampAtom->urid_map->handle, uri_.c_str());
             LOGD ("[urid] %s -> %d", uri_.c_str(), pluginControls.at(pluginIndex)->urid);
             lv2Descriptor->connect_port(handle, port, filePort);
+            filePortNum = port ;
 
             LOGD("[%s %d/%d]: found possible atom port", lv2Descriptor->URI, port, pluginIndex);
         } else if (jsonPort.find ("AtomPort") != jsonPort.end() && jsonPort.find ("OutputPort") != jsonPort.end()) {
@@ -259,6 +328,7 @@ void Plugin::load () {
             }
 
             lv2Descriptor->connect_port(handle, port, notifyPort);
+            notifyPortNum = port ;
 //            lv2Descriptor->connect_port(handle, port, filePort);
 
             LOGD("[%s %d]: found possible notify port", lv2Descriptor->URI, port);
@@ -373,10 +443,20 @@ void Plugin::setBuffer (float * buffer, int read_bytes) {
         //~ LOGD("setting buffer for LV2 plugin") ;
         lv2Descriptor->connect_port(handle, 99, &read_bytes);
         lv2Descriptor->connect_port(handle, 100, buffer);
+        // The right-channel instance needs the same impulse/audio file, or
+        // that channel would run the convolver with no data loaded.
+        if (handle2 != nullptr) {
+            lv2Descriptor->connect_port(handle2, 99, &read_bytes);
+            lv2Descriptor->connect_port(handle2, 100, buffer);
+        }
     } else {
         //~ LOGD("setting buffer for LADSPA plugin");
         descriptor->connect_port(handle, 99, reinterpret_cast<LADSPA_Data *>(&read_bytes));
         descriptor->connect_port(handle, 100, buffer);
+        if (handle2 != nullptr) {
+            descriptor->connect_port(handle2, 99, reinterpret_cast<LADSPA_Data *>(&read_bytes));
+            descriptor->connect_port(handle2, 100, buffer);
+        }
     }
     OUT
 }

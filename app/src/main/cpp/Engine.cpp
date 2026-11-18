@@ -17,7 +17,10 @@ static jobject gClassLoader;
 static jmethodID gFindClassMethod;
 
 Engine::Engine () {
-    assert(mOutputChannelCount == mInputChannelCount);
+    // The output stream is stereo while the input is left at the device default
+    // (ChannelCount::Unspecified), so the two counts are not expected to match.
+    // The audio callback handles any input channel count, upmixing mono to
+    // L = R, which is why this used to be an assert and no longer can be.
 //    queueManager = new LockFreeQueueManager ();
     queueManager.add_function (resetAtomPorts);
     queueManager.add_function (meter->updateMeterOutput);
@@ -62,30 +65,20 @@ bool Engine::setEffectOn(bool isOn) {
 //                mFullDuplexPass.queue = queueManager.process ;
                 mFullDuplexPass.lockFreeQueueManager = &queueManager ;
 
-                queueManager.init (mPlayStream->getBufferSizeInFrames()/mPlayStream->getChannelCount());
+                // The queue holds one frame per sample slot, so its size is the
+                // frame capacity; dividing by the channel count would halve it
+                // now that the streams are stereo.
+                queueManager.init (mPlayStream->getBufferSizeInFrames());
 
-                // The scratch buffers must exist before the streams start, or
-                // the first audio callback writes through a null pointer.
-                // Note: do not assign mBufferSize here, because
-                // FullDuplexStream::start() only allocates its input buffer
-                // when the computed size is strictly larger.
-                const int32_t scratchSamples = mPlayStream->getBufferCapacityInFrames()
-                        * mPlayStream->getChannelCount();
-
-                if (mFullDuplexPass.inSamples != NULL)
-                    free (static_cast<void *>(mFullDuplexPass.inSamples));
-
-                if (mFullDuplexPass.raw != NULL)
-                    free (static_cast<void *>(mFullDuplexPass.raw));
-
-                // The buffer holds samples, so the byte size must include
-                // sizeof(float); allocating one byte per sample overflowed the
-                // heap on every audio callback.
-                const size_t bufferBytes =
-                        static_cast<size_t>(scratchSamples) * sizeof(float);
-                mFullDuplexPass.inSamples = static_cast<float *>(malloc(bufferBytes));
-                LOGD("[engine] allocated %d bytes to raw samples", static_cast<int>(bufferBytes));
-                mFullDuplexPass.raw = static_cast<float *>(malloc(bufferBytes));
+                // The per-channel scratch buffers must exist before the
+                // streams start, or the first audio callback writes through a
+                // null pointer. They hold one float per frame per channel, so
+                // the size is frames * sizeof(float), not frames * channels:
+                // left and right get their own buffer.
+                const int32_t scratchFrames = mPlayStream->getBufferCapacityInFrames();
+                mFullDuplexPass.allocateBuffers (scratchFrames);
+                LOGD("[engine] allocated %d bytes per channel to raw samples",
+                     static_cast<int>(scratchFrames * sizeof(float)));
 
                 mFullDuplexPass.start();
 
@@ -188,8 +181,7 @@ oboe::Result  Engine::openStreams() {
     mFullDuplexPass.setInputStream(mRecordingStream);
     mFullDuplexPass.setOutputStream(mPlayStream);
 
-    mFullDuplexPass.inputConditioner.setSampleRate((float) mSampleRate);
-    mFullDuplexPass.inputConditioner.reset();
+    mFullDuplexPass.setInputConditionerSampleRate ((float) mSampleRate);
 
     // Load LADSPA Plugin here
 
@@ -509,9 +501,15 @@ void Engine::buildPluginChain () {
     IN
     LOGD("building chain for %d plugins", activePlugins.size());
     mFullDuplexPass.activePlugins = 0;
+    for (int i = 0 ; i < MAX_PLUGINS ; i ++)
+        mFullDuplexPass.handle2 [i] = NULL ;
     for (Plugin *p: activePlugins) {
         if (!p->active)
             continue;
+        // A mono plugin needs a second instance so the two channels keep
+        // independent state; a stereo-native plugin runs as one instance.
+        if (p->isMono () && p->handle2 == nullptr)
+            p->createSecondHandle ();
         mFullDuplexPass.inputPorts [mFullDuplexPass.activePlugins] = p->inputPort ;
         mFullDuplexPass.outputPorts [mFullDuplexPass.activePlugins] = p->outputPort ;
         mFullDuplexPass.inputPorts2 [mFullDuplexPass.activePlugins] = p->inputPort2 ;
@@ -532,6 +530,7 @@ void Engine::buildPluginChain () {
 
         mFullDuplexPass.run_adding_gain [mFullDuplexPass.activePlugins] = p->run_adding_gain ;
         mFullDuplexPass.handle [mFullDuplexPass.activePlugins] = p->handle ;
+        mFullDuplexPass.handle2 [mFullDuplexPass.activePlugins] = p->handle2 ;
         mFullDuplexPass.activePlugins ++ ;
     }
 

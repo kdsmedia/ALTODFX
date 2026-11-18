@@ -695,7 +695,7 @@ Java_com_shajikhan_ladspa_amprack_AudioEngine_setInputConditionerEnabled(JNIEnv 
     if (engine == NULL)
         return ;
 
-    engine->mFullDuplexPass.inputConditioner.enabled = enabled ;
+    engine->mFullDuplexPass.setInputConditionerEnabled (enabled) ;
 }
 
 extern "C"
@@ -706,7 +706,7 @@ Java_com_shajikhan_ladspa_amprack_AudioEngine_setNoiseGateThreshold(JNIEnv *env,
         return ;
 
     if (threshold < 0.0f) threshold = 0.0f ;
-    engine->mFullDuplexPass.inputConditioner.gateThreshold = threshold ;
+    engine->mFullDuplexPass.setInputConditionerThreshold (threshold) ;
 }
 
 extern "C"
@@ -718,9 +718,8 @@ Java_com_shajikhan_ladspa_amprack_AudioEngine_setInputHighpass(JNIEnv *env, jcla
 
     if (frequency < 10.0f) frequency = 10.0f ;
     if (frequency > 500.0f) frequency = 500.0f ;
-    engine->mFullDuplexPass.inputConditioner.highpassHz = frequency ;
-    engine->mFullDuplexPass.inputConditioner.setSampleRate(
-            (float) engine->mSampleRate) ;
+    engine->mFullDuplexPass.setInputConditionerHighpass (frequency) ;
+    engine->mFullDuplexPass.setInputConditionerSampleRate ((float) engine->mSampleRate) ;
 }
 
 extern "C"

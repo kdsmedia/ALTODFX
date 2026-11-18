@@ -42,6 +42,11 @@ public:
     LV2_Atom_Sequence * filePort = nullptr;//= static_cast<LV2_Atom_Sequence *>(malloc(sizeof (LV2_Atom_Sequence)));
     LV2_Atom_Sequence * notifyPort = nullptr;//= static_cast<LV2_Atom_Sequence *>(malloc(sizeof (LV2_Atom_Sequence)));
     int filePortIndex = -1 ;
+    // Actual LV2 port numbers the first instance connected the atom/file and
+    // notify buffers to, so the second (right-channel) instance mirrors them
+    // instead of guessing.
+    int filePortNum = -1 ;
+    int notifyPortNum = -1 ;
 //    LV2_Atom_Forge forge;
 
     const LV2_Feature* const* featurePointers() const
@@ -65,7 +70,20 @@ public:
     int outputPort2 = -1;
     LADSPA_Data dummy_output_control_port = 0; // from th pulseaudio ladspa sink module
     LADSPA_Handle *handle ;
+    // Second instance of a mono plugin, so a stereo chain keeps independent
+    // state for the right channel. Null for stereo-native plugins.
+    LADSPA_Handle *handle2 = nullptr ;
     Plugin(const LADSPA_Descriptor * descriptor, unsigned long _sampleRate, SharedLibrary::PluginType _type = SharedLibrary::LADSPA);
+
+    // True when the plugin declares a single audio input and a single audio
+    // output, in which case it must be instantiated once per channel.
+    bool isMono () const { return inputPort != -1 && inputPort2 == -1
+                               && outputPort != -1 && outputPort2 == -1 ; }
+
+    // Creates handle2 for a mono plugin. Control and atom ports are shared with
+    // the first instance so both channels follow the same settings; only the
+    // audio ports stay unconnected because the host rewires them every block.
+    void createSecondHandle () ;
     void print();
 
     void free();

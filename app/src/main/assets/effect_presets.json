@@ -7,12 +7,12 @@
       { "name": "Ketat", "values": { "RATIO": 8.0, "KNEE": 8.0, "THRESHOLD": -28.0, "RELEASE": 0.1, "ATTACK": 0.002 } }
     ]
   },
-  "30200": {
+  "1300": {
     "name": "AutoWah",
     "presets": [
-      { "name": "Funk", "values": { "Wah": 0.75 } },
-      { "name": "Vokal", "values": { "Wah": 0.5 } },
-      { "name": "Bass", "values": { "Wah": 0.3 } }
+      { "name": "Funk", "values": { "Sensitivity": 0.85, "Resonance": 0.75, "Depth": 0.9, "Range": 0.55, "Attack": 0.1, "Release": 0.3 } },
+      { "name": "Vokal", "values": { "Sensitivity": 0.5, "Resonance": 0.4, "Depth": 0.7, "Range": 0.45, "Attack": 0.25, "Release": 0.5 } },
+      { "name": "Bass", "values": { "Sensitivity": 0.35, "Resonance": 0.6, "Depth": 0.6, "Range": 0.2, "Attack": 0.35, "Release": 0.55 } }
     ]
   },
   "21300": {

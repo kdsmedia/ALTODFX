@@ -85,8 +85,17 @@ public:
     void addPluginToRackLazy(char * library, int pluginIndex, SharedLibrary::PluginType _type = SharedLibrary::LADSPA);
     int addPlugintoRackByName(std::string);
     int lowLatency = 12 ;
-    const int32_t     mInputChannelCount = oboe::ChannelCount::Mono;
-    const int32_t     mOutputChannelCount = oboe::ChannelCount::Mono;
+    // The rack is stereo end to end: the effect chain and the output stream
+    // both carry two channels, so stereo effects (chorus, delay, reverb) keep
+    // their width.
+    //
+    // The capture side is left at the device default instead of being forced
+    // to stereo. A guitar on the 3.5 mm jack is a mono source, and requesting
+    // a stereo capture stream makes many phones fail to open it, which would
+    // silence the whole app. The callback upmixes a mono input to L = R, so a
+    // mono capture still feeds a fully stereo chain.
+    const int32_t     mInputChannelCount = oboe::ChannelCount::Unspecified;
+    const int32_t     mOutputChannelCount = oboe::ChannelCount::Stereo;
     const oboe::AudioFormat mFormat = oboe::AudioFormat::Float; // for easier processing
 
     std::shared_ptr<oboe::AudioStream> mRecordingStream;

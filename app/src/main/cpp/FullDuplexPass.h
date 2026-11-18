@@ -28,6 +28,9 @@
 // Front-end conditioning applied to the raw input before the effect chain.
 // A guitar plugged into a headset-jack interface (iRIG style) picks up DC
 // offset, mains hum and hiss; removing those here keeps the whole chain clean.
+//
+// One instance is used per channel, so a stereo chain keeps independent filter
+// and gate state for L and R.
 class InputConditioner {
 public:
     bool enabled = true ;
@@ -251,13 +254,50 @@ class FullDuplexPass : public FullDuplexStream {
     //| TODO: Limit number of plugins active in free version?
 public:
     #define MAX_PLUGINS 32 // room for a full professional effect rack
-    InputConditioner inputConditioner ;
-    OutputLimiter outputLimiter ;
+    // One conditioner and one limiter per channel: a stereo chain keeps
+    // independent filter and gate state for L and R.
+    InputConditioner inputConditioner ;   // left
+    InputConditioner inputConditionerR ;  // right
+    OutputLimiter outputLimiter ;         // left
+    OutputLimiter outputLimiterR ;        // right
     AudioTuner tuner ;
     float inputVolume = 1.0 ;
     float outputVolume = 1.0 ;
     bool meterEnabled = true ;
     bool pause = false ;
+
+    void setInputConditionerEnabled (bool enabled) {
+        inputConditioner.enabled = inputConditionerR.enabled = enabled ;
+    }
+
+    void setInputConditionerThreshold (float threshold) {
+        inputConditioner.gateThreshold = inputConditionerR.gateThreshold = threshold ;
+    }
+
+    void setInputConditionerHighpass (float hz) {
+        inputConditioner.highpassHz = inputConditionerR.highpassHz = hz ;
+    }
+
+    void setInputConditionerSampleRate (float sampleRate) {
+        inputConditioner.setSampleRate (sampleRate) ;
+        inputConditionerR.setSampleRate (sampleRate) ;
+        inputConditioner.reset () ;
+        inputConditionerR.reset () ;
+    }
+
+    // Both channel buffers must exist before the streams start. They hold one
+    // float per sample per channel, so the allocation is samples * sizeof(float).
+    void allocateBuffers (int32_t samplesPerChannel) {
+        const size_t bytes = static_cast<size_t>(samplesPerChannel) * sizeof (float) ;
+        if (inSamples != NULL) free (static_cast<void *>(inSamples)) ;
+        if (inSamplesR != NULL) free (static_cast<void *>(inSamplesR)) ;
+        if (raw != NULL) free (static_cast<void *>(raw)) ;
+        if (rawR != NULL) free (static_cast<void *>(rawR)) ;
+        inSamples = static_cast<float *>(malloc (bytes)) ;
+        inSamplesR = static_cast<float *>(malloc (bytes)) ;
+        raw = static_cast<float *>(malloc (bytes)) ;
+        rawR = static_cast<float *>(malloc (bytes)) ;
+    }
     
     // Lock Free Queue Manager
     void (queue)(float * data, int frames) ;
@@ -274,6 +314,9 @@ public:
                                 LADSPA_Data   Gain);
 
     void * handle [MAX_PLUGINS] ;
+    // Second instance, used only for mono plugins so left and right keep
+    // independent filter/delay state. Null for stereo-native plugins.
+    void * handle2 [MAX_PLUGINS] ;
     LADSPA_Data run_adding_gain [MAX_PLUGINS] ;
     const LADSPA_Descriptor * descriptor [MAX_PLUGINS] ;
     int inputPorts [MAX_PLUGINS] ;
@@ -282,9 +325,11 @@ public:
     int outputPorts2 [MAX_PLUGINS] ;
     bool pushToLockFreeBeforeOutputVolume = false ;
     int activePlugins =  0 ;
-    float * raw = NULL; // this will never be greater than this(TM)
+    float * raw = NULL;   // left, pre-output-volume
+    float * rawR = NULL;  // right, pre-output-volume
     bool bypass = false ;
-    float * inSamples = NULL ;
+    float * inSamples = NULL ;   // left
+    float * inSamplesR = NULL ;  // right
 
     virtual oboe::DataCallbackResult
     onBothStreamsReady(
@@ -298,108 +343,115 @@ public:
         const float *inputFloats = static_cast<const float *>(inputData);
         float *outputFloats = static_cast<float *>(outputData);
 
-        // It also assumes the channel count for each stream is the same.
-        int32_t samplesPerFrame = outputStream->getChannelCount();
-        int32_t numInputSamples = numInputFrames * samplesPerFrame;
-        int32_t numOutputSamples = numOutputFrames * samplesPerFrame;
+        // The chain is stereo. The capture side may still be mono (a guitar on
+        // the 3.5 mm jack is a mono source); a mono input is upmixed to L = R.
+        const int32_t inChannels = inputStream->getChannelCount();
+        const int32_t outChannels = outputStream->getChannelCount();
 
-        // It is possible that there may be fewer input than output samples.
-        int32_t samplesToProcess = std::min(numInputSamples, numOutputSamples);
+        // It is possible that there may be fewer input than output frames.
+        const int32_t framesToProcess = std::min(numInputFrames, numOutputFrames);
 
-//        float inSamples [samplesToProcess];
-        for (int i = 0 ; i < samplesToProcess ; i ++) {
-            raw [i] = inSamples [i] = inputConditioner.process (inputFloats [i]) * inputVolume ;
-            tuner.push (inSamples [i]) ;
+        for (int32_t i = 0 ; i < framesToProcess ; i ++) {
+            const float inL = inputFloats [i * inChannels] ;
+            const float inR = inChannels > 1 ? inputFloats [i * inChannels + 1] : inL ;
+
+            const float l = inputConditioner.process (inL) * inputVolume ;
+            const float r = inputConditionerR.process (inR) * inputVolume ;
+
+            raw [i] = inSamples [i] = l ;
+            rawR [i] = inSamplesR [i] = r ;
+
+            // The tuner and the meter are mono; both follow the left channel.
+            tuner.push (l) ;
         }
 
-//        if (meterEnabled) {
-//            Meter::process (samplesToProcess, inSamples, true);
-//        }
-        // this
-        // am I devloper yet?
-//        memcpy(outputData, inputData, samplesToProcess);
         if (! bypass)
-            process(inSamples, numInputSamples);
+            process (inSamples, inSamplesR, framesToProcess);
 
         /* this is not supposed to be called directly.
          * hence the entire vringbuffer stuff
          */
 
         if (pushToLockFreeBeforeOutputVolume && ! pause)
-            lockFreeQueueManager->process(raw, inSamples, samplesToProcess) ;
+            lockFreeQueueManager->process (raw, inSamples, framesToProcess) ;
 
-        for (int32_t i = 0; i < samplesToProcess; i++) {
-            inSamples [i] = inSamples [i]  * outputVolume; // do some arbitrary processing
-            inSamples [i] = outputLimiter.process (inSamples [i]) ;
-            *outputFloats++ = inSamples [i];
+        for (int32_t i = 0 ; i < framesToProcess ; i ++) {
+            const float l = outputLimiter.process (inSamples [i] * outputVolume) ;
+            const float r = outputLimiterR.process (inSamplesR [i] * outputVolume) ;
+
+            if (outChannels == 1) {
+                outputFloats [i] = 0.5f * (l + r) ;
+            } else {
+                outputFloats [i * outChannels] = l ;
+                outputFloats [i * outChannels + 1] = r ;
+                for (int32_t c = 2 ; c < outChannels ; c ++)
+                    outputFloats [i * outChannels + c] = 0.0f ;
+            }
         }
-
-//        if (meterEnabled) {
-//            Meter::process (samplesToProcess, inSamples, false);
-//        }
 
         if (! pushToLockFreeBeforeOutputVolume && ! pause)
-            lockFreeQueueManager->process(raw, inSamples, samplesToProcess) ;
+            lockFreeQueueManager->process (raw, inSamples, framesToProcess) ;
 
-        //        for (int32_t i = 0; i < samplesToProcess; i++) {
-//            *outputFloats++ = *inputFloats++  * outputVolume; // do some arbitrary processing
-//        }
-
-        // If there are fewer input samples then clear the rest of the buffer.
-        int32_t samplesLeft = numOutputSamples - numInputSamples;
-        for (int32_t i = 0; i < samplesLeft; i++) {
-            *outputFloats++ = 0.0; // silence
+        // If there are fewer input frames then clear the rest of the buffer.
+        for (int32_t i = framesToProcess * outChannels ;
+             i < numOutputFrames * outChannels ; i ++) {
+            outputFloats [i] = 0.0f ; // silence
         }
 
-        //        OUT ;
         return oboe::DataCallbackResult::Continue;
     }
 
-    void process (const float * data, int samplesToProcess) {
-#define PROFILE_PLUGINS1
-#ifdef PROFILE_PLUGINS
-        auto start = std::chrono::system_clock::now();
-        auto since_last = start ;
-#endif
+    // Stereo chain. `left` and `right` are separate per-channel buffers.
+    //
+    // A plugin that declares two audio inputs and two audio outputs is stereo
+    // native: L goes to its first input, R to its second, and its two outputs
+    // are read back into L and R. A mono plugin has one input and one output,
+    // so it is run twice with a second instance (handle2) to keep the two
+    // channels' filter and delay state independent; running a single instance
+    // on both channels in turn would corrupt that state.
+    void process (float * left, float * right, int samplesToProcess) {
         for (int i = 0 ; i < activePlugins ; i ++) {
-            if (inputPorts [i] != -1)
-                connect_port [i] (handle [i], inputPorts [i], (LADSPA_Data *) data);
-            if (outputPorts [i] != -1)
-                connect_port [i] (handle [i], outputPorts [i], (LADSPA_Data *) data);
+            void * h = handle [i] ;
+            if (h == NULL)
+                continue ;
 
-//            LOGD("I/O Ports %d %d", inputPorts [i], outputPorts [i]);
-//            LOGD("[%d] samples", samplesToProcess);
+            const bool stereoNative = handle2 [i] == NULL ;
 
-            if (inputPorts2 [i] != -1)
-                connect_port [i] (handle [i], inputPorts2 [i], (LADSPA_Data *) data);
-            if (outputPorts2 [i] != -1)
-                connect_port [i] (handle [i], outputPorts2 [i], (LADSPA_Data *) data);
+            if (stereoNative) {
+                if (inputPorts [i] != -1)
+                    connect_port [i] (h, inputPorts [i], (LADSPA_Data *) left);
+                if (inputPorts2 [i] != -1)
+                    connect_port [i] (h, inputPorts2 [i], (LADSPA_Data *) right);
+                if (outputPorts [i] != -1)
+                    connect_port [i] (h, outputPorts [i], (LADSPA_Data *) left);
+                if (outputPorts2 [i] != -1)
+                    connect_port [i] (h, outputPorts2 [i], (LADSPA_Data *) right);
 
-//            LOGD("I/O 2 Ports %d %d", inputPorts2 [i], outputPorts2 [i]);
+                if (run [i] == NULL)
+                    LOGF ("run %d is null", i);
+                else
+                    run [i] (h, samplesToProcess);
+            } else {
+                // Left on the first instance, right on the second.
+                if (inputPorts [i] != -1)
+                    connect_port [i] (h, inputPorts [i], (LADSPA_Data *) left);
+                if (outputPorts [i] != -1)
+                    connect_port [i] (h, outputPorts [i], (LADSPA_Data *) left);
 
-            if (run [i] == NULL)
-                LOGF ("run %d is null", i);
-            else
-                run [i] (handle [i], samplesToProcess);
-            /*
-            if (set_run_adding_gain [i] != NULL)
-                set_run_adding_gain [i] (handle [i], run_adding_gain [i]) ;
-            if (run_adding [i] != NULL)
-                run [i] (handle [i], samplesToProcess);
-            */
+                void * h2 = handle2 [i] ;
+                if (inputPorts [i] != -1)
+                    connect_port [i] (h2, inputPorts [i], (LADSPA_Data *) right);
+                if (outputPorts [i] != -1)
+                    connect_port [i] (h2, outputPorts [i], (LADSPA_Data *) right);
 
-#ifdef PROFILE_PLUGINS
-            auto elapsed = std::chrono::system_clock::now() - since_last ;
-            since_last = since_last + elapsed;
-            LOGD("[%d: %d] %lld ms", i, samplesToProcess, elapsed.count ()) ;
-#endif
+                if (run [i] == NULL)
+                    LOGF ("run %d is null", i);
+                else {
+                    run [i] (h, samplesToProcess);
+                    run [i] (h2, samplesToProcess);
+                }
+            }
         }
-
-#ifdef PROFILE_PLUGINS
-        auto elapsed = std::chrono::system_clock::now() - start ;
-        LOGD("[%d] %lld ms", samplesToProcess, elapsed.count ()) ;
-#endif
-
     }
 };
 #endif //SAMPLES_FULLDUPLEXPASS_H

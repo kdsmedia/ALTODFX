@@ -170,6 +170,30 @@ not to file recording.
   `<fragment>` is the part after `#` in the plugin URI) exists, otherwise the
   plugin fails to load and shifts every preset index after it.
 
+### Stereo engine
+
+- The whole engine is **stereo end to end**. The output stream is opened with
+  two channels; the effect chain carries left and right separately; the JNI
+  meter and the input conditioner each have a per-channel instance.
+- The **capture** stream is left at the device default (`ChannelCount::
+  Unspecified`) on purpose. A guitar on the 3.5 mm jack is mono, and forcing a
+  stereo capture stream makes many phones fail to open it, which silences the
+  whole app. The callback upmixes a mono capture to L = R, so a mono input
+  still feeds the stereo chain. Do not set the input channel count to `Stereo`.
+- A **mono** rack plugin (one audio in / one audio out) is instantiated twice:
+  `Plugin::handle` is the left instance, `Plugin::handle2` the right. Controls
+  are shared (both instances point at the same control memory), so a slider
+  moves both channels. `Plugin::createSecondHandle()` does this; the host calls
+  it from `Engine::buildPluginChain()` for every plugin where `isMono()` is
+  true. `setBuffer()` mirrors the impulse-response buffer to both instances.
+- A **stereo** rack plugin (two audio in / two audio out, e.g. GxChorus-Stereo,
+  GxDelay-Stereo, mda-*, rkrlv2-*) runs as a single instance: `inputPort` /
+  `outputPort` are left, `inputPort2` / `outputPort2` are right.
+- `FullDuplexPass::process()` decides per plugin: if `handle2` is null it is a
+  stereo-native plugin and gets `inputPorts`/`outputPorts`/`inputPorts2`/
+  `outputPorts2`; otherwise it is mono and `handle` processes left while
+  `handle2` processes right.
+
 ### Adding an in-tree effect (built from C++ source)
 
 New effects that ship as source live in `app/src/main/cpp/` and are compiled
@@ -186,9 +210,10 @@ target). Steps:
    `TubeDrive::isFinite`). `-O3` is fine.
 3. Pick a free library index in `R.array.ladspa_plugins`
    (`app/src/main/res/values/arrays.xml`). Index `i` gives plugin IDs
-   `i*100 .. i*100+99`. Only ~21 of the 150 entries have a real `.so`; an entry
-   with no binary and no `voice.json`/`all_plugins.json` reference is safe to
-   reuse. `libaltodfx_tubedrive.so` occupies index 9 (IDs 900-999).
+   `i*100 .. i*100+99`. Most of the 150 entries have no real `.so`; an entry
+   with no binary in any ABI and no `voice.json`/`all_plugins.json` reference is
+   safe to reuse. `libaltodfx_tubedrive.so` occupies index 9 (IDs 900-999) and
+   `libaltodfx_autowah.so` occupies index 13 (IDs 1300-1399).
 4. Add the slot to `app/src/main/assets/voice.json`. `index` on each control is
    the **LADSPA port number** (not the control's ordinal): the host matches it
    against `PluginControl::port` in `getActivePluginValueByIndex` /
@@ -196,8 +221,12 @@ target). Steps:
 5. Add an entry to `app/src/main/assets/effect_presets.json` (three presets,
    values keyed by control name) so the effect gets the quick-preset bar.
 6. The host connects the **same buffer** to the input and output audio ports
-   (`FullDuplexPass::process`), so `run()` must process in place. The rack is
-   mono; a stereo effect must downmix or process the mono channel only.
+   (`FullDuplexPass::process`), so `run()` must process in place. A plugin with
+   one audio input and one audio output is treated as **mono**: the host
+   instantiates it twice, once per channel, and each instance keeps its own
+   state. Do not try to make such a plugin stereo internally; just declare one
+   in / one out. A plugin with two audio inputs and two audio outputs is run as
+   a single instance on the stereo pair. See "Stereo engine" below.
 7. Appending a slot at the end of `voice.json` keeps the existing factory
    presets valid (they are positional but only cover the earlier slots). Do not
    insert in the middle without rewriting every file in `assets/presets/`.

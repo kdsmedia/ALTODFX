@@ -54,28 +54,62 @@
             }
         }
     },
-    "30200": {
+    "1300": {
         "name": "AutoWah",
         "controls": {
             "0": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "1.0",
+                "default": 0.5,
                 "index": 2,
-                "maximum": "1.0",
-                "minimum": "0.0",
-                "name": "BYPASS",
-                "symbol": "BYPASS"
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Sensitivity"
             },
             "1": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.0",
+                "default": 0.55,
                 "index": 3,
-                "maximum": "1.0",
-                "minimum": "0.0",
-                "name": "Wah",
-                "symbol": "WAH"
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Resonance"
+            },
+            "2": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.85,
+                "index": 4,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Depth"
+            },
+            "3": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.5,
+                "index": 5,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Range"
+            },
+            "4": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.2,
+                "index": 6,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Attack"
+            },
+            "5": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.4,
+                "index": 7,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Release"
             }
         }
     },

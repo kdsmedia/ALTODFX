@@ -958,5 +958,11 @@
     "id": 1428,
     "plugin": 0,
     "library": "libzm1_1428.so"
+  },
+  "1300": {
+    "name": "AutoWah",
+    "id": 9001,
+    "plugin": 0,
+    "library": "libaltodfx_autowah.so"
   }
 }

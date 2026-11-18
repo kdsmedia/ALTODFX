@@ -79,6 +79,12 @@ void LockFreeQueueManager::process (float * raw, float * data, int samplesToProc
         return;
     }
 
+    // The spare buffers hold buffer_size floats. Clamp so a callback that is
+    // ever handed more frames than the queue was sized for cannot overflow the
+    // heap; the meter only needs the start of the block anyway.
+    if (samplesToProcess > buffer_size)
+        samplesToProcess = buffer_size ;
+
     for (int i = 0 ; i < samplesToProcess ; i ++) {
         pAudioBuffer [buffer_counter]->raw [i] = raw [i] ;
         pAudioBuffer [buffer_counter]->data [i] = data [i] ;
