@@ -1037,29 +1037,80 @@
             }
         }
     },
-    "12900": {
+    "13500": {
         "name": "Reverb",
         "controls": {
             "0": {
-                "name": "Decay",
-                "default": 2400,
-                "minimum": 0,
-                "maximum": 10000,
-                "index": 0
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.75,
+                "index": 4,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Room"
             },
             "1": {
-                "name": "Amount",
-                "default": -6,
-                "minimum": -24,
-                "maximum": 12,
-                "index": 2
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 2.5,
+                "index": 5,
+                "maximum": 8.0,
+                "minimum": 0.2,
+                "name": "Decay"
             },
             "2": {
-                "name": "Mode",
-                "default": 0,
-                "minimum": 0,
-                "maximum": 42,
-                "index": 7
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.45,
+                "index": 6,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Damping"
+            },
+            "3": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 20.0,
+                "index": 7,
+                "maximum": 200.0,
+                "minimum": 0.0,
+                "name": "Pre-Delay"
+            },
+            "4": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.75,
+                "index": 8,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Diffusion"
+            },
+            "5": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.3,
+                "index": 9,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Mix"
+            },
+            "6": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 1.0,
+                "index": 10,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Width"
+            },
+            "7": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 1.0,
+                "index": 11,
+                "maximum": 2.0,
+                "minimum": 0.0,
+                "name": "Gain"
             }
         }
     },

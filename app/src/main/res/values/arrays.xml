@@ -276,7 +276,7 @@
         <item>libtap_tremolo.so</item>
         <item>libtap_tubewarmth.so</item>
         <item>libtap_vibrato.so</item>
-        <item>libToneControls.so</item>
+        <item>libaltodfx_reverb.so</item>
         <item>libToneStack.so</item>
         <item>libtransient_1206.so</item>
         <item>libtriple_para_1204.so</item>

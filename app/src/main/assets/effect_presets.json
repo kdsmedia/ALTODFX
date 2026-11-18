@@ -135,12 +135,12 @@
       { "name": "Ping Pong", "values": { "L Time": 220.0, "R Time": 330.0, "Feedback": 0.55, "Mix": 0.4, "Tone": 0.55, "Width": 1.0, "Mode": 1.0, "Gain": 1.0 } }
     ]
   },
-  "12900": {
+  "13500": {
     "name": "Reverb",
     "presets": [
-      { "name": "Ruang", "values": { "Decay": 1200.0, "Amount": -8.0, "Mode": 5.0 } },
-      { "name": "Hall", "values": { "Decay": 3000.0, "Amount": -6.0, "Mode": 15.0 } },
-      { "name": "Ambien", "values": { "Decay": 6000.0, "Amount": -4.0, "Mode": 30.0 } }
+      { "name": "Room", "values": { "Room": 0.5, "Decay": 1.2, "Damping": 0.5, "Pre-Delay": 10.0, "Diffusion": 0.7, "Mix": 0.25, "Width": 1.0, "Gain": 1.0 } },
+      { "name": "Hall", "values": { "Room": 0.8, "Decay": 3.0, "Damping": 0.4, "Pre-Delay": 25.0, "Diffusion": 0.8, "Mix": 0.3, "Width": 1.0, "Gain": 1.0 } },
+      { "name": "Ambient", "values": { "Room": 1.0, "Decay": 6.0, "Damping": 0.3, "Pre-Delay": 40.0, "Diffusion": 0.9, "Mix": 0.4, "Width": 1.0, "Gain": 1.0 } }
     ]
   },
   "3500": {

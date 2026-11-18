@@ -1024,5 +1024,11 @@
     "id": 9012,
     "plugin": 0,
     "library": "libaltodfx_echo.so"
+  },
+  "13500": {
+    "name": "Reverb",
+    "id": 9013,
+    "plugin": 0,
+    "library": "libaltodfx_reverb.so"
   }
 }
