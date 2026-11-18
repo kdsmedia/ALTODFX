@@ -266,28 +266,53 @@
             }
         }
     },
-    "31500": {
+    "2300": {
         "name": "Muff",
         "controls": {
             "0": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.5",
-                "index": 2,
-                "maximum": "1.0",
-                "minimum": "0.0",
-                "name": "TONE",
-                "symbol": "TONE"
+                "default": 0.75,
+                "index": 4,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Sustain"
             },
             "1": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.5",
-                "index": 3,
-                "maximum": "1.0",
-                "minimum": "0.0",
-                "name": "VOLUME",
-                "symbol": "VOLUME"
+                "default": 0.5,
+                "index": 5,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Tone"
+            },
+            "2": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.7,
+                "index": 6,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Volume"
+            },
+            "3": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.6,
+                "index": 7,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Bass"
+            },
+            "4": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.5,
+                "index": 8,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Treble"
             }
         }
     },

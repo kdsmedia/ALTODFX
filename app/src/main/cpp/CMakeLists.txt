@@ -72,6 +72,10 @@ add_library(altodfx_fuzz SHARED FuzzPlugin.cpp)
 # Same -O3 rationale as the other in-tree effects.
 target_compile_options(altodfx_fuzz PRIVATE -Wall -O3)
 
+add_library(altodfx_muff SHARED MuffPlugin.cpp)
+# Same -O3 rationale as the other in-tree effects.
+target_compile_options(altodfx_muff PRIVATE -Wall -O3)
+
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
 # default, you only need to specify the name of the public NDK library

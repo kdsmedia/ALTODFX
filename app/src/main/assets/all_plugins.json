@@ -976,5 +976,11 @@
     "id": 9003,
     "plugin": 0,
     "library": "libaltodfx_fuzz.so"
+  },
+  "2300": {
+    "name": "Muff",
+    "id": 9004,
+    "plugin": 0,
+    "library": "libaltodfx_muff.so"
   }
 }

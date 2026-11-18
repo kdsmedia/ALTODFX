@@ -39,12 +39,12 @@
       { "name": "Sputter", "values": { "Fuzz": 0.9, "Tone": 0.45, "Sustain": 0.85, "Bias": 0.15, "Level": 0.6, "Character": 0.0 } }
     ]
   },
-  "31500": {
+  "2300": {
     "name": "Muff",
     "presets": [
-      { "name": "Klasik", "values": { "TONE": 0.5, "VOLUME": 0.6 } },
-      { "name": "Gelap", "values": { "TONE": 0.25, "VOLUME": 0.65 } },
-      { "name": "Terang", "values": { "TONE": 0.8, "VOLUME": 0.55 } }
+      { "name": "Classic", "values": { "Sustain": 0.75, "Tone": 0.5, "Volume": 0.7, "Bass": 0.6, "Treble": 0.5 } },
+      { "name": "Lead", "values": { "Sustain": 0.9, "Tone": 0.6, "Volume": 0.7, "Bass": 0.6, "Treble": 0.65 } },
+      { "name": "Wall", "values": { "Sustain": 1.0, "Tone": 0.4, "Volume": 0.6, "Bass": 0.8, "Treble": 0.35 } }
     ]
   },
   "24900": {
