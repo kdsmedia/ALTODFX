@@ -682,10 +682,24 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_shajikhan_ladspa_amprack_AudioEngine_setOutputVolume(JNIEnv *env, jclass clazz,
                                                               jfloat volume) {
-    // TODO: implement setOutputVolume()
-//    IN
+    if (engine == NULL) {
+        HERE LOGF ("engine is NULL"); OUT
+    }
+
+    // A real output gain, not a mute switch. 0 % is silent, 100 % is unity.
+    if (volume < 0.0f) volume = 0.0f ;
+    if (volume > 1.0f) volume = 1.0f ;
     engine -> mFullDuplexPass . outputVolume = volume ;
-//    OUT
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_shajikhan_ladspa_amprack_AudioEngine_setOutputMuted(JNIEnv *env, jclass clazz,
+                                                             jboolean muted) {
+    if (engine == NULL)
+        return ;
+
+    engine -> mFullDuplexPass . outputMuted = muted ;
 }
 
 extern "C"

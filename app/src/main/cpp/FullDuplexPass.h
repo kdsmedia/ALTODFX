@@ -34,25 +34,28 @@
 class InputConditioner {
 public:
     bool enabled = true ;
-    float gateThreshold = 0.0035f ; // linear amplitude
-    float highpassHz = 80.0f ;
+    float gateThreshold = 0.0015f ; // linear amplitude
+    float highpassHz = 70.0f ;
     float sampleRate = 48000.0f ;
 
     inline void setSampleRate (float sr) {
         if (sr <= 0) return ;
         sampleRate = sr ;
-        // 1st order high-pass coefficient (also removes DC offset).
+        // Two cascaded first-order stages give a second-order response, which
+        // actually attenuates 50/60 Hz mains hum instead of only tilting it.
+        // The corner sits below the low E string (82 Hz) so the lowest notes
+        // keep their level.
         float rc = 1.0f / (2.0f * (float) M_PI * highpassHz) ;
         float dt = 1.0f / sampleRate ;
         mHighpassAlpha = rc / (rc + dt) ;
         mAttack = std::exp (-1.0f / (0.002f * sampleRate)) ;
         mRelease = std::exp (-1.0f / (0.150f * sampleRate)) ;
-        mOpenStep = 1.0f / (0.001f * sampleRate) ;
-        mCloseStep = 1.0f / (0.050f * sampleRate) ;
+        mOpenStep = 1.0f / (0.002f * sampleRate) ;
+        mCloseStep = 1.0f / (0.250f * sampleRate) ;
     }
 
     inline void reset () {
-        mX1 = mY1 = 0.0f ;
+        mX1 = mY1 = mX2 = mY2 = 0.0f ;
         mEnv = 0.0f ;
         mGain = 1.0f ;
         mHoldCounter = 0 ;
@@ -61,38 +64,42 @@ public:
     inline float process (float x) {
         if (! enabled) return x ;
 
-        // DC blocker + high-pass in one stage.
+        // Second-order high-pass: two cascaded DC blockers. The first stage
+        // removes the DC offset, the pair rolls off mains hum.
         float y = mHighpassAlpha * (mY1 + x - mX1) ;
         mX1 = x ;
         mY1 = y ;
+        float z = mHighpassAlpha * (mY2 + y - mX2) ;
+        mX2 = y ;
+        mY2 = z ;
 
         // Envelope follower for the noise gate.
-        float rectified = std::fabs (y) ;
+        float rectified = std::fabs (z) ;
         if (rectified > mEnv)
             mEnv = mAttack * mEnv + (1.0f - mAttack) * rectified ;
         else
             mEnv = mRelease * mEnv + (1.0f - mRelease) * rectified ;
 
         // Hysteresis: open above the threshold, only close once the envelope
-        // falls below half of it. Without the second level the gate chatters on
-        // a decaying note and chops the tail of every chord.
+        // falls below half of it. The hold keeps the gate open through the
+        // decay of a note, so a ringing chord is not chopped off.
         const float closeThreshold = gateThreshold * 0.5f ;
         if (mEnv > gateThreshold) {
-            mHoldCounter = (int) (0.05f * sampleRate) ; // 50 ms hold
+            mHoldCounter = (int) (0.25f * sampleRate) ; // 250 ms hold
         } else if (mHoldCounter > 0) {
             mHoldCounter -- ;
         }
 
         bool open = (mEnv > gateThreshold) || (mHoldCounter > 0 && mEnv > closeThreshold) ;
         if (open) {
-            mGain += mOpenStep ;           // fast open (~1 ms)
+            mGain += mOpenStep ;           // fast open (~2 ms)
         } else {
-            mGain -= mCloseStep ;          // slow close (~50 ms)
+            mGain -= mCloseStep ;          // slow close (~250 ms)
         }
         if (mGain > 1.0f) mGain = 1.0f ;
         if (mGain < 0.0f) mGain = 0.0f ;
 
-        return y * mGain ;
+        return z * mGain ;
     }
 
 private:
@@ -100,12 +107,13 @@ private:
     float mAttack = 0.9896f ;
     float mRelease = 0.99986f ;
     float mX1 = 0.0f, mY1 = 0.0f ;
+    float mX2 = 0.0f, mY2 = 0.0f ;
     float mEnv = 0.0f ;
     float mGain = 1.0f ;
     int   mHoldCounter = 0 ;
     // Per-sample ramps chosen for a 48 kHz rate; scaled at setSampleRate time.
-    float mOpenStep = 1.0f / (0.001f * 48000.0f) ;
-    float mCloseStep = 1.0f / (0.050f * 48000.0f) ;
+    float mOpenStep = 1.0f / (0.002f * 48000.0f) ;
+    float mCloseStep = 1.0f / (0.250f * 48000.0f) ;
 };
 
 // Final safety stage on the output. The effect chain can easily sum several
@@ -262,7 +270,11 @@ public:
     OutputLimiter outputLimiterR ;        // right
     AudioTuner tuner ;
     float inputVolume = 1.0 ;
+    // Real output gain, set by the volume slider. The power button is a
+    // separate mute flag so switching the effect off does not overwrite the
+    // level the user chose.
     float outputVolume = 1.0 ;
+    bool outputMuted = true ;
     bool meterEnabled = true ;
     bool pause = false ;
 
@@ -376,8 +388,11 @@ public:
             lockFreeQueueManager->process (raw, inSamples, framesToProcess) ;
 
         for (int32_t i = 0 ; i < framesToProcess ; i ++) {
-            const float l = outputLimiter.process (inSamples [i] * outputVolume) ;
-            const float r = outputLimiterR.process (inSamplesR [i] * outputVolume) ;
+            // The output limiter runs after the output volume so a high level
+            // cannot clip the DAC; the mute flag gates the result.
+            const float outGain = outputMuted ? 0.0f : outputVolume ;
+            const float l = outputLimiter.process (inSamples [i] * outGain) ;
+            const float r = outputLimiterR.process (inSamplesR [i] * outGain) ;
 
             if (outChannels == 1) {
                 outputFloats [i] = 0.5f * (l + r) ;
@@ -415,7 +430,12 @@ public:
             if (h == NULL)
                 continue ;
 
-            const bool stereoNative = handle2 [i] == NULL ;
+            // Stereo detection must follow the port layout, not the presence of
+            // a second handle. A mono plugin always reports one input and one
+            // output; treating a missing second handle as "stereo native" left
+            // the right channel unprocessed (the effect only changed the left
+            // side).
+            const bool stereoNative = (inputPorts2 [i] != -1 || outputPorts2 [i] != -1) ;
 
             if (stereoNative) {
                 if (inputPorts [i] != -1)
@@ -439,6 +459,24 @@ public:
                     connect_port [i] (h, outputPorts [i], (LADSPA_Data *) left);
 
                 void * h2 = handle2 [i] ;
+                if (h2 == NULL) {
+                    // The second instance could not be created. Running the one
+                    // instance twice keeps both channels effected; the filter
+                    // state is shared, which colours the stereo image but is
+                    // better than leaving the right channel dry.
+                    if (run [i] == NULL)
+                        LOGF ("run %d is null", i);
+                    else {
+                        run [i] (h, samplesToProcess);
+                        if (inputPorts [i] != -1)
+                            connect_port [i] (h, inputPorts [i], (LADSPA_Data *) right);
+                        if (outputPorts [i] != -1)
+                            connect_port [i] (h, outputPorts [i], (LADSPA_Data *) right);
+                        run [i] (h, samplesToProcess);
+                    }
+                    continue ;
+                }
+
                 if (inputPorts [i] != -1)
                     connect_port [i] (h2, inputPorts [i], (LADSPA_Data *) right);
                 if (outputPorts [i] != -1)

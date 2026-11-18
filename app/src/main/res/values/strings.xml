@@ -4,6 +4,7 @@
     <string name="presets_label">Presets</string>
     <string name="about_title">About ALTODFX</string>
     <string name="effect_power">Effect on/off</string>
+    <string name="output_volume_label">Output volume</string>
     <string name="effect_on">Effect ON</string>
     <string name="effect_off">Effect OFF — tap the power button</string>
     <string name="nav_home">Home</string>

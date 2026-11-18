@@ -70,6 +70,9 @@ public:
         // Input envelope follower: fast attack, slow release.
         envAttack_ = 1.0f - std::exp(-1.0f / (0.002f * sampleRate_));
         envRelease_ = 1.0f - std::exp(-1.0f / (0.080f * sampleRate_));
+        // Output DC blocker, corner ~25 Hz: below the low E string but high
+        // enough to remove the offset the square-derived octaves leave behind.
+        dcAlpha_ = 1.0f - (6.2831853f * 25.0f / sampleRate_);
     }
 
     void setParameters(float subOctave1, float subOctave2, float upperOctave,
@@ -99,6 +102,7 @@ public:
         sub1StateL_ = sub1StateR_ = 0.0f;
         sub2StateL_ = sub2StateR_ = 0.0f;
         upperStateL_ = upperStateR_ = 0.0f;
+        dcX1L_ = dcY1L_ = dcX1R_ = dcY1R_ = 0.0f;
         enableRamp_ = 1.0f;
         env_ = 0.0f;
         primed_ = false;
@@ -201,10 +205,18 @@ public:
             const float octaveL = softLimit((inL * drySm_ + wetL) * gainSm_);
             const float octaveR = softLimit((inR * drySm_ + wetR) * gainSm_);
 
+            // Remove any residual DC before the mix leaves the effect.
+            const float dcL = octaveL - dcX1L_ + dcAlpha_ * dcY1L_;
+            dcX1L_ = octaveL;
+            dcY1L_ = dcL;
+            const float dcR = octaveR - dcX1R_ + dcAlpha_ * dcY1R_;
+            dcX1R_ = octaveR;
+            dcY1R_ = dcR;
+
             // Blend the dry signal in as the ramp falls, so a bypass is click
             // free and never leaves the sub oscillators audible.
-            const float outL = inL + (octaveL - inL) * enableRamp_;
-            const float outR = inR + (octaveR - inR) * enableRamp_;
+            const float outL = inL + (dcL - inL) * enableRamp_;
+            const float outR = inR + (dcR - inR) * enableRamp_;
 
             left[i] = isFinite(outL) ? outL : inL;
             right[i] = isFinite(outR) ? outR : inR;
@@ -324,6 +336,14 @@ private:
     float sub1StateL_ = 0.0f, sub1StateR_ = 0.0f;
     float sub2StateL_ = 0.0f, sub2StateR_ = 0.0f;
     float upperStateL_ = 0.0f, upperStateR_ = 0.0f;
+
+    // The generated octaves are square-derived and are not exactly
+    // zero-mean, so the mix carried a DC offset (measured ~-0.02 at the
+    // defaults) that rides on the output as a low thump. A one-pole high-pass
+    // removes it per channel.
+    float dcX1L_ = 0.0f, dcY1L_ = 0.0f;
+    float dcX1R_ = 0.0f, dcY1R_ = 0.0f;
+    float dcAlpha_ = 0.999f;
 
     std::atomic<float> sub1_{0.65f};
     std::atomic<float> sub2_{0.0f};

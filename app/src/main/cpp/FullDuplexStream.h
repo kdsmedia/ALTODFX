@@ -78,8 +78,13 @@ public:
 private:
 
     // TODO add getters and setters
-    static constexpr int32_t kNumCallbacksToDrain   = 20;
-    static constexpr int32_t kNumCallbacksToDiscard = 30;
+    // The stream pair only needs a short settling phase. The reference values
+    // (20 drain + 30 discard) were chosen for a glitch-measurement app and
+    // silence the output for roughly 50 callbacks, which the player hears as
+    // "the effect takes a moment to come in". A few callbacks are enough to
+    // align the two streams.
+    static constexpr int32_t kNumCallbacksToDrain   = 4;
+    static constexpr int32_t kNumCallbacksToDiscard = 6;
 
     // let input fill back up, usually 0 or 1
     int32_t              mNumInputBurstsCushion = 1;

@@ -51,6 +51,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -139,6 +140,33 @@ public class MainActivity extends AppCompatActivity {
         ToggleButton preview = findViewById(R.id.preview);
         statusText = findViewById(R.id.status_text);
 
+        // Output volume: a real gain control at the top of the rack. The value
+        // is kept as a percentage in the preferences so it survives a restart.
+        SeekBar outputVolume = findViewById(R.id.output_volume);
+        TextView outputVolumeValue = findViewById(R.id.output_volume_value);
+        int savedVolume = defaultSharedPreferences.getInt("output_volume", 70);
+        if (savedVolume < 0) savedVolume = 0;
+        if (savedVolume > 100) savedVolume = 100;
+        outputVolume.setProgress(savedVolume);
+        outputVolumeValue.setText(String.format("%d%%", savedVolume));
+        outputVolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                outputVolumeValue.setText(String.format("%d%%", progress));
+                AudioEngine.setOutputVolume(progress / 100.0f);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) { }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                defaultSharedPreferences.edit()
+                        .putInt("output_volume", seekBar.getProgress())
+                        .apply();
+            }
+        });
+
         Button deletePreset = findViewById(R.id.delete_preset);
         deletePreset.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -161,14 +189,14 @@ public class MainActivity extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
 //                    buttonView.setButtonDrawable(getResources().getDrawable(R.drawable.mute));
-                    AudioEngine.setOutputVolume(1f);
+                    AudioEngine.setOutputMuted(false);
                     if (! running)
                         startEffect();
                     else
                         Log.i(TAG, "onCheckedChanged: effect already running");
                 } else {
 //                    buttonView.setButtonDrawable(getResources().getDrawable(R.drawable.preview));
-                    AudioEngine.setOutputVolume(0f);
+                    AudioEngine.setOutputMuted(true);
 
                     stopEffect();
                 }
@@ -275,7 +303,8 @@ public class MainActivity extends AppCompatActivity {
         // recorder identity when a capture stream is opened.
         AudioEngine.setPackageName(getPackageName());
 
-        AudioEngine.setOutputVolume(0f);
+        AudioEngine.setOutputVolume(savedVolume / 100.0f);
+        AudioEngine.setOutputMuted(true);
 
         availablePlugins = loadJSONFromAssetFile(this, "all_plugins.json");
         availablePluginsLV2 = loadJSONFromAssetFile(this, "lv2_plugins.json");
@@ -766,7 +795,7 @@ public class MainActivity extends AppCompatActivity {
     // interface tends to hum and buzz.
     public static void applyInputConditioner () {
         boolean enabled = defaultSharedPreferences.getBoolean("input_clean", true);
-        float gate = Float.parseFloat(defaultSharedPreferences.getString("noise_gate", "0.008"));
+        float gate = Float.parseFloat(defaultSharedPreferences.getString("noise_gate", "0.002"));
         float highpass = Float.parseFloat(defaultSharedPreferences.getString("input_highpass", "80"));
         AudioEngine.setInputConditionerEnabled(enabled);
         AudioEngine.setNoiseGateThreshold(gate);

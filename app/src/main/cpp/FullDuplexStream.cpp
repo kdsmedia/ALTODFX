@@ -56,7 +56,7 @@ oboe::DataCallbackResult FullDuplexStream::onAudioReady(
         oboe::ResultWithValue<int32_t> result = mInputStream->read(mInputBuffer.get(),
                                                                        numFrames,
                                                                        0 /* timeout */);
-        if (!result) {
+        if (!result && result.error() != oboe::Result::ErrorTimeout) {
             callbackResult = oboe::DataCallbackResult::Stop;
         }
         mCountCallbacksToDiscard--;
@@ -67,7 +67,16 @@ oboe::DataCallbackResult FullDuplexStream::onAudioReady(
                                                                        numFrames,
                                                                        0 /* timeout */);
         if (!result) {
-            callbackResult = oboe::DataCallbackResult::Stop;
+            // A non-blocking read can time out before the input has produced a
+            // whole block. That is not a reason to tear down the capture
+            // stream: the output is already silenced for this callback, so the
+            // next callback can try again. Treating every timeout as fatal left
+            // the effect silent until the app was restarted, which the player
+            // hears as "it made a brief sound and then went quiet".
+            if (result.error() != oboe::Result::ErrorTimeout) {
+                LOGW("input read failed: %s", oboe::convertToText(result.error()));
+                callbackResult = oboe::DataCallbackResult::Stop;
+            }
         } else {
             int32_t framesRead = result.value();
 
