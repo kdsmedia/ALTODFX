@@ -199,7 +199,7 @@
         <item>libimpulse_1885.so</item>
         <item>libimpulseresponse.so</item>
         <item>libinv_1429.so</item>
-        <item>libinv_common.so</item>
+        <item>libaltodfx_flanger.so</item>
         <item>libinv_compressor.so</item>
         <item>libinv_erreverb.so</item>
         <item>libinv_filter.so</item>

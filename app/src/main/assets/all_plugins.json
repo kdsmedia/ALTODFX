@@ -988,5 +988,11 @@
     "id": 9006,
     "plugin": 0,
     "library": "libaltodfx_phaser.so"
+  },
+  "5800": {
+    "name": "Flanger",
+    "id": 9007,
+    "plugin": 0,
+    "library": "libaltodfx_flanger.so"
   }
 }

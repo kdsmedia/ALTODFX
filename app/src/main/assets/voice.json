@@ -657,49 +657,80 @@
             }
         }
     },
-    "26100": {
+    "5800": {
         "name": "Flanger",
         "controls": {
             "0": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": 0.5,
-                "index": 0,
-                "maximum": 5.0,
-                "minimum": 0.0,
-                "name": "DEPTH",
-                "symbol": "depth"
+                "default": 0.25,
+                "index": 4,
+                "maximum": 10.0,
+                "minimum": 0.01,
+                "name": "Rate"
             },
             "1": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": 5.0,
-                "index": 1,
-                "maximum": 10.0,
+                "default": 0.75,
+                "index": 5,
+                "maximum": 1.0,
                 "minimum": 0.0,
-                "name": "WIDTH",
-                "symbol": "width"
+                "name": "Depth"
             },
             "2": {
                 "InputPort": true,
                 "ControlPort": true,
-                "http://lv2plug.in/ns/extensions/units#unit": "http://lv2plug.in/ns/extensions/units#hz",
-                "default": 0.2,
-                "index": 2,
+                "default": 2.0,
+                "index": 6,
                 "maximum": 10.0,
-                "minimum": 0.05,
-                "name": "FREQ",
-                "symbol": "freq"
+                "minimum": 0.1,
+                "name": "Delay"
+            },
+            "3": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.55,
+                "index": 7,
+                "maximum": 0.95,
+                "minimum": -0.95,
+                "name": "Feedback"
+            },
+            "4": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.5,
+                "index": 8,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Mix"
             },
             "5": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": 0.0,
-                "index": 5,
+                "default": 1.0,
+                "index": 9,
                 "maximum": 1.0,
-                "minimum": -1.0,
-                "name": "MIX",
-                "symbol": "mix"
+                "minimum": 0.0,
+                "name": "Stereo"
+            },
+            "6": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 1.0,
+                "index": 10,
+                "maximum": 2.0,
+                "minimum": 0.0,
+                "name": "Gain"
+            },
+            "7": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.0,
+                "index": 11,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Wave"
             }
         }
     },

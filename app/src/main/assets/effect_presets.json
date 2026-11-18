@@ -95,12 +95,12 @@
       { "name": "Lebar", "values": { "Level": 0.6, "Delay": 0.03, "Depth": 0.7, "Freq": 0.4 } }
     ]
   },
-  "26100": {
+  "5800": {
     "name": "Flanger",
     "presets": [
-      { "name": "Subtil", "values": { "DEPTH": 1.5, "WIDTH": 5.0, "FREQ": 0.5, "MIX": 0.0 } },
-      { "name": "Jet", "values": { "DEPTH": 3.5, "WIDTH": 7.0, "FREQ": 0.3, "MIX": 0.2 } },
-      { "name": "Sweep", "values": { "DEPTH": 4.5, "WIDTH": 9.0, "FREQ": 0.15, "MIX": 0.3 } }
+      { "name": "Classic", "values": { "Rate": 0.25, "Depth": 0.75, "Delay": 2.0, "Feedback": 0.55, "Mix": 0.5, "Stereo": 1.0, "Gain": 1.0, "Wave": 0.0 } },
+      { "name": "Jet", "values": { "Rate": 0.15, "Depth": 1.0, "Delay": 1.2, "Feedback": 0.9, "Mix": 0.7, "Stereo": 1.0, "Gain": 1.0, "Wave": 0.0 } },
+      { "name": "Chorus", "values": { "Rate": 0.5, "Depth": 0.4, "Delay": 6.0, "Feedback": 0.1, "Mix": 0.45, "Stereo": 1.0, "Gain": 1.0, "Wave": 0.0 } }
     ]
   },
   "29000": {
