@@ -765,58 +765,62 @@
             }
         }
     },
-    "29000": {
+    "7800": {
         "name": "Tremolo",
         "controls": {
             "0": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "50.0",
-                "index": 0,
-                "maximum": "100.0",
-                "minimum": "0.0",
-                "name": "Dry/Wet",
-                "symbol": "DRY_WET"
+                "default": 4.0,
+                "index": 4,
+                "maximum": 20.0,
+                "minimum": 0.01,
+                "name": "Rate"
             },
             "1": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": 0,
-                "index": 1,
-                "maximum": 1,
-                "minimum": 0,
-                "name": "Mode",
-                "symbol": "MODE"
+                "default": 0.75,
+                "index": 5,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Depth"
             },
             "2": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.5",
-                "index": 2,
-                "maximum": "1.0",
-                "minimum": "0.0",
-                "name": "Depth",
-                "symbol": "DEPTH"
+                "default": 0.0,
+                "index": 6,
+                "maximum": 1.0,
+                "minimum": -1.0,
+                "name": "Bias"
             },
             "3": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "5.0",
-                "index": 3,
-                "maximum": "50.0",
-                "minimum": "0.1",
-                "name": "Freq",
-                "symbol": "FREQ"
+                "default": 0.0,
+                "index": 7,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Stereo"
             },
             "4": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.0",
-                "index": 6,
-                "maximum": "1.0",
-                "minimum": "0.0",
-                "name": "Reset",
-                "symbol": "RESET"
+                "default": 1.0,
+                "index": 8,
+                "maximum": 2.0,
+                "minimum": 0.0,
+                "name": "Gain"
+            },
+            "5": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.0,
+                "index": 9,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Wave"
             }
         }
     },

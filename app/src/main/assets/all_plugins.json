@@ -1000,5 +1000,11 @@
     "id": 9008,
     "plugin": 0,
     "library": "libaltodfx_chorus.so"
+  },
+  "7800": {
+    "name": "Tremolo",
+    "id": 9009,
+    "plugin": 0,
+    "library": "libaltodfx_tremolo.so"
   }
 }

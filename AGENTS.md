@@ -220,7 +220,8 @@ target). Steps:
    `libaltodfx_equalizer.so` index 43 (IDs 4300-4399) and
    `libaltodfx_phaser.so` index 54 (IDs 5400-5499) and
    `libaltodfx_flanger.so` index 58 (IDs 5800-5899) and
-   `libaltodfx_chorus.so` index 68 (IDs 6800-6899).
+   `libaltodfx_chorus.so` index 68 (IDs 6800-6899) and
+   `libaltodfx_tremolo.so` index 78 (IDs 7800-7899).
 4. Add the slot to `app/src/main/assets/voice.json`. `index` on each control is
    the **LADSPA port number** (not the control's ordinal): the host matches it
    against `PluginControl::port` in `getActivePluginValueByIndex` /

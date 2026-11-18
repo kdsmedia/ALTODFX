@@ -219,7 +219,7 @@
         <item>libmonocompressor.so</item>
         <item>libmultivoice_chorus_1201.so</item>
         <item>libNoisegate.so</item>
-        <item>libPan.so</item>
+        <item>libaltodfx_tremolo.so</item>
         <item>libphasers_1217.so</item>
         <item>libPhaser.so</item>
         <item>libplate_1423.so</item>

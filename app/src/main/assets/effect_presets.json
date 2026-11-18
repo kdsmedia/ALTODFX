@@ -103,12 +103,12 @@
       { "name": "Chorus", "values": { "Rate": 0.5, "Depth": 0.4, "Delay": 6.0, "Feedback": 0.1, "Mix": 0.45, "Stereo": 1.0, "Gain": 1.0, "Wave": 0.0 } }
     ]
   },
-  "29000": {
+  "7800": {
     "name": "Tremolo",
     "presets": [
-      { "name": "Subtil", "values": { "Dry/Wet": 30.0, "Mode": 0.0, "Depth": 0.3, "Freq": 4.0, "Reset": 0.0 } },
-      { "name": "Klasik", "values": { "Dry/Wet": 50.0, "Mode": 0.0, "Depth": 0.5, "Freq": 5.0, "Reset": 0.0 } },
-      { "name": "Dalam", "values": { "Dry/Wet": 70.0, "Mode": 0.0, "Depth": 0.8, "Freq": 6.0, "Reset": 0.0 } }
+      { "name": "Classic", "values": { "Rate": 4.0, "Depth": 0.75, "Bias": 0.0, "Stereo": 0.0, "Gain": 1.0, "Wave": 0.0 } },
+      { "name": "Square Chop", "values": { "Rate": 6.0, "Depth": 0.9, "Bias": 0.0, "Stereo": 0.0, "Gain": 1.0, "Wave": 0.4 } },
+      { "name": "Random", "values": { "Rate": 8.0, "Depth": 0.8, "Bias": 0.0, "Stereo": 1.0, "Gain": 1.0, "Wave": 1.0 } }
     ]
   },
   "27600": {

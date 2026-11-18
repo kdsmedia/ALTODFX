@@ -89,6 +89,9 @@ target_compile_options(altodfx_flanger PRIVATE -Wall -O3)
 add_library(altodfx_chorus SHARED ChorusPlugin.cpp)
 target_compile_options(altodfx_chorus PRIVATE -Wall -O3)
 
+add_library(altodfx_tremolo SHARED TremoloPlugin.cpp)
+target_compile_options(altodfx_tremolo PRIVATE -Wall -O3)
+
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
 # default, you only need to specify the name of the public NDK library
