@@ -534,38 +534,80 @@
             }
         }
     },
-    "27700": {
+    "5400": {
         "name": "Phaser",
         "controls": {
             "0": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "50.0",
-                "index": 0,
-                "maximum": "100.0",
-                "minimum": "0.0",
-                "name": "Dry/Wet",
-                "symbol": "DRY_WET"
+                "default": 0.35,
+                "index": 4,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Rate"
             },
             "1": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.0",
-                "index": 1,
-                "maximum": "10.0",
-                "minimum": "-60.0",
-                "name": "LEVEL",
-                "symbol": "LEVEL"
+                "default": 0.75,
+                "index": 5,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Depth"
             },
             "2": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.5",
-                "index": 2,
-                "maximum": "10.0",
-                "minimum": "0.0",
-                "name": "SPEED",
-                "symbol": "SPEED"
+                "default": 0.55,
+                "index": 6,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Feedback"
+            },
+            "3": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.5,
+                "index": 7,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Mix"
+            },
+            "4": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.45,
+                "index": 8,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Center"
+            },
+            "5": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.5,
+                "index": 9,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Stereo"
+            },
+            "6": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.667,
+                "index": 10,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Stages"
+            },
+            "7": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 1.0,
+                "index": 11,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Level"
             }
         }
     },

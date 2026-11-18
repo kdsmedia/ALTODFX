@@ -982,5 +982,11 @@
     "id": 9004,
     "plugin": 0,
     "library": "libaltodfx_muff.so"
+  },
+  "5400": {
+    "name": "Phaser",
+    "id": 9006,
+    "plugin": 0,
+    "library": "libaltodfx_phaser.so"
   }
 }

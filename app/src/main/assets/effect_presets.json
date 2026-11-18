@@ -79,12 +79,12 @@
       { "name": "Lead", "values": { "31 Hz": -3, "62 Hz": -1, "125 Hz": 0, "250 Hz": 2, "500 Hz": 3, "1 kHz": 3, "2 kHz": 3, "4 kHz": 2, "8 kHz": 1, "16 kHz": 0 } }
     ]
   },
-  "27700": {
+  "5400": {
     "name": "Phaser",
     "presets": [
-      { "name": "Subtil", "values": { "Dry/Wet": 40.0, "LEVEL": 0.0, "SPEED": 0.4 } },
-      { "name": "Klasik", "values": { "Dry/Wet": 50.0, "LEVEL": 0.0, "SPEED": 0.5 } },
-      { "name": "Dalam", "values": { "Dry/Wet": 60.0, "LEVEL": 0.0, "SPEED": 0.25 } }
+      { "name": "Classic", "values": { "Rate": 0.35, "Depth": 0.75, "Feedback": 0.55, "Mix": 0.5, "Center": 0.45, "Stereo": 0.5, "Stages": 0.667, "Level": 1.0 } },
+      { "name": "Slow Sweep", "values": { "Rate": 0.12, "Depth": 0.9, "Feedback": 0.5, "Mix": 0.55, "Center": 0.4, "Stereo": 0.7, "Stages": 1.0, "Level": 1.0 } },
+      { "name": "Jet", "values": { "Rate": 0.6, "Depth": 1.0, "Feedback": 0.9, "Mix": 0.7, "Center": 0.6, "Stereo": 1.0, "Stages": 1.0, "Level": 1.0 } }
     ]
   },
   "30500": {
