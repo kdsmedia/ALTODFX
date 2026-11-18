@@ -288,7 +288,7 @@
         <item>libvocoder.so</item>
         <item>libvynil_1905.so</item>
         <item>libwave_terrain_1412.so</item>
-        <item>libWhite.so</item>
+        <item>libaltodfx_compressor.so</item>
         <item>libxfade_1915.so</item>
         <item>libzm1_1428.so</item>
     </string-array>

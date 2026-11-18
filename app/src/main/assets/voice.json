@@ -1,56 +1,78 @@
 {
-    "30700": {
+    "14700": {
         "name": "Compressor",
         "controls": {
             "0": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": 2.0,
-                "index": 0,
-                "maximum": 20.0,
-                "minimum": 1.0,
-                "name": "RATIO",
-                "symbol": "RATIO"
+                "default": -18.0,
+                "index": 4,
+                "maximum": 0.0,
+                "minimum": -60.0,
+                "name": "Threshold"
             },
             "1": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": 3.0,
-                "index": 1,
+                "default": 4.0,
+                "index": 5,
                 "maximum": 20.0,
-                "minimum": "0.0",
-                "name": "KNEE",
-                "symbol": "KNEE"
+                "minimum": 1.0,
+                "name": "Ratio"
             },
             "2": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": -20.0,
-                "index": 2,
-                "maximum": 10.0,
-                "minimum": -96.0,
-                "name": "THRESHOLD",
-                "symbol": "THRESHOLD"
+                "default": 10.0,
+                "index": 6,
+                "maximum": 200.0,
+                "minimum": 0.1,
+                "name": "Attack"
             },
             "3": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": 0.5,
-                "index": 3,
-                "maximum": 10.0,
-                "minimum": 0.0,
-                "name": "RELEASE",
-                "symbol": "RELEASE"
+                "default": 100.0,
+                "index": 7,
+                "maximum": 2000.0,
+                "minimum": 5.0,
+                "name": "Release"
             },
             "4": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": 0.002,
-                "index": 4,
+                "default": 6.0,
+                "index": 8,
+                "maximum": 24.0,
+                "minimum": 0.0,
+                "name": "Knee"
+            },
+            "5": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.0,
+                "index": 9,
+                "maximum": 24.0,
+                "minimum": -12.0,
+                "name": "Makeup"
+            },
+            "6": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.0,
+                "index": 10,
                 "maximum": 1.0,
                 "minimum": 0.0,
-                "name": "ATTACK",
-                "symbol": "ATTACK"
+                "name": "Detector"
+            },
+            "7": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 1.0,
+                "index": 11,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Link"
             }
         }
     },

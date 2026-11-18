@@ -1036,5 +1036,11 @@
     "id": 9014,
     "plugin": 0,
     "library": "libaltodfx_normalizer.so"
+  },
+  "14700": {
+    "name": "Compressor",
+    "id": 9015,
+    "plugin": 0,
+    "library": "libaltodfx_compressor.so"
   }
 }

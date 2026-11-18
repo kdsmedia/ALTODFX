@@ -1,10 +1,10 @@
 {
-  "30700": {
+  "14700": {
     "name": "Compressor",
     "presets": [
-      { "name": "Ringan", "values": { "RATIO": 2.0, "KNEE": 3.0, "THRESHOLD": -18.0, "RELEASE": 0.2, "ATTACK": 0.01 } },
-      { "name": "Sedang", "values": { "RATIO": 4.0, "KNEE": 6.0, "THRESHOLD": -22.0, "RELEASE": 0.3, "ATTACK": 0.005 } },
-      { "name": "Ketat", "values": { "RATIO": 8.0, "KNEE": 8.0, "THRESHOLD": -28.0, "RELEASE": 0.1, "ATTACK": 0.002 } }
+      { "name": "Ringan", "values": { "Threshold": -18.0, "Ratio": 2.0, "Attack": 10.0, "Release": 200.0, "Knee": 3.0, "Makeup": 0.0, "Detector": 0.0, "Link": 1.0 } },
+      { "name": "Sedang", "values": { "Threshold": -22.0, "Ratio": 4.0, "Attack": 5.0, "Release": 300.0, "Knee": 6.0, "Makeup": 0.0, "Detector": 0.3, "Link": 1.0 } },
+      { "name": "Ketat", "values": { "Threshold": -28.0, "Ratio": 8.0, "Attack": 2.0, "Release": 100.0, "Knee": 8.0, "Makeup": 6.0, "Detector": 0.6, "Link": 1.0 } }
     ]
   },
   "1300": {
