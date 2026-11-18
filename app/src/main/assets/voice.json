@@ -207,48 +207,62 @@
             }
         }
     },
-    "31400": {
+    "1900": {
         "name": "Fuzz",
         "controls": {
             "0": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.0",
-                "index": 0,
-                "maximum": 10,
-                "minimum": "-20.0",
-                "name": "INPUT",
-                "symbol": "INPUT"
+                "default": 0.75,
+                "index": 4,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Fuzz"
             },
             "1": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "100.0",
-                "index": 1,
-                "maximum": "100.0",
-                "minimum": 10,
-                "name": "OUTPUT",
-                "symbol": "OUTPUT"
+                "default": 0.55,
+                "index": 5,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Tone"
             },
             "2": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "1.0",
-                "index": 2,
-                "maximum": 100,
-                "minimum": "-3.0",
-                "name": "DRIVE",
-                "symbol": "DRIVE"
+                "default": 0.7,
+                "index": 6,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Sustain"
             },
             "3": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.5",
-                "index": 3,
-                "maximum": "1.0",
-                "minimum": "0.0",
-                "name": "TONE",
-                "symbol": "TONE"
+                "default": 0.5,
+                "index": 7,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Bias"
+            },
+            "4": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.65,
+                "index": 8,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Level"
+            },
+            "5": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.25,
+                "index": 9,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Character"
             }
         }
     },

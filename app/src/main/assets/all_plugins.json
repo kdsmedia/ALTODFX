@@ -970,5 +970,11 @@
     "id": 9002,
     "plugin": 0,
     "library": "libaltodfx_distortion.so"
+  },
+  "1900": {
+    "name": "Fuzz",
+    "id": 9003,
+    "plugin": 0,
+    "library": "libaltodfx_fuzz.so"
   }
 }

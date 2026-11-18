@@ -31,12 +31,12 @@
       { "name": "Metal", "values": { "Drive": 0.85, "Tone": 0.4, "Level": 0.72, "Bass": 0.4, "Presence": 0.7, "Hardness": 0.9 } }
     ]
   },
-  "31400": {
+  "1900": {
     "name": "Fuzz",
     "presets": [
-      { "name": "Klasik", "values": { "INPUT": 0.0, "OUTPUT": 80.0, "DRIVE": 30.0, "TONE": 0.5 } },
-      { "name": "Vintage", "values": { "INPUT": -2.0, "OUTPUT": 70.0, "DRIVE": 15.0, "TONE": 0.35 } },
-      { "name": "Wild", "values": { "INPUT": 2.0, "OUTPUT": 100.0, "DRIVE": 80.0, "TONE": 0.6 } }
+      { "name": "Vintage", "values": { "Fuzz": 0.7, "Tone": 0.5, "Sustain": 0.7, "Bias": 0.5, "Level": 0.65, "Character": 0.0 } },
+      { "name": "Modern", "values": { "Fuzz": 0.85, "Tone": 0.6, "Sustain": 0.8, "Bias": 0.5, "Level": 0.65, "Character": 1.0 } },
+      { "name": "Sputter", "values": { "Fuzz": 0.9, "Tone": 0.45, "Sustain": 0.85, "Bias": 0.15, "Level": 0.6, "Character": 0.0 } }
     ]
   },
   "31500": {

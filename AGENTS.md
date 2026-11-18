@@ -213,8 +213,9 @@ target). Steps:
    `i*100 .. i*100+99`. Most of the 150 entries have no real `.so`; an entry
    with no binary in any ABI and no `voice.json`/`all_plugins.json` reference is
    safe to reuse. `libaltodfx_tubedrive.so` occupies index 9 (IDs 900-999),
-   `libaltodfx_autowah.so` index 13 (IDs 1300-1399) and
-   `libaltodfx_distortion.so` index 14 (IDs 1400-1499).
+   `libaltodfx_autowah.so` index 13 (IDs 1300-1399),
+   `libaltodfx_distortion.so` index 14 (IDs 1400-1499) and
+   `libaltodfx_fuzz.so` index 19 (IDs 1900-1999).
 4. Add the slot to `app/src/main/assets/voice.json`. `index` on each control is
    the **LADSPA port number** (not the control's ordinal): the host matches it
    against `PluginControl::port` in `getActivePluginValueByIndex` /
