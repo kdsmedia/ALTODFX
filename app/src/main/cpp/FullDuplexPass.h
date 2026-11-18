@@ -253,7 +253,7 @@ inline float detectPitch (const float * x, int n, float sampleRate,
 class FullDuplexPass : public FullDuplexStream {
     //| TODO: Limit number of plugins active in free version?
 public:
-    #define MAX_PLUGINS 32 // room for a full professional effect rack
+    #define MAX_PLUGINS 40 // room for a full professional effect rack
     // One conditioner and one limiter per channel: a stereo chain keeps
     // independent filter and gate state for L and R.
     InputConditioner inputConditioner ;   // left
