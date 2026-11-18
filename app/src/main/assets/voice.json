@@ -960,28 +960,80 @@
             }
         }
     },
-    "3600": {
+    "11600": {
         "name": "Echo",
         "controls": {
+            "0": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 300.0,
+                "index": 4,
+                "maximum": 5000.0,
+                "minimum": 1.0,
+                "name": "L Time"
+            },
+            "1": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 450.0,
+                "index": 5,
+                "maximum": 5000.0,
+                "minimum": 1.0,
+                "name": "R Time"
+            },
             "2": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": 20,
-                "index": 2,
-                "maximum": 100.0,
+                "default": 0.4,
+                "index": 6,
+                "maximum": 0.95,
                 "minimum": 0.0,
-                "name": "Amount",
-                "symbol": "DRYWET"
+                "name": "Feedback"
             },
             "3": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": 480,
-                "index": 3,
-                "maximum": 2000.0,
-                "minimum": 1.0,
-                "name": "Time (ms)",
-                "symbol": "DRYWET"
+                "default": 0.35,
+                "index": 7,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Mix"
+            },
+            "4": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.65,
+                "index": 8,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Tone"
+            },
+            "5": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 1.0,
+                "index": 9,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Width"
+            },
+            "6": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.0,
+                "index": 10,
+                "maximum": 2.0,
+                "minimum": 0.0,
+                "name": "Mode"
+            },
+            "7": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 1.0,
+                "index": 11,
+                "maximum": 2.0,
+                "minimum": 0.0,
+                "name": "Gain"
             }
         }
     },

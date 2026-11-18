@@ -98,6 +98,9 @@ target_compile_options(altodfx_octaver PRIVATE -Wall -O3)
 add_library(altodfx_delay SHARED DelayPlugin.cpp)
 target_compile_options(altodfx_delay PRIVATE -Wall -O3)
 
+add_library(altodfx_echo SHARED EchoPlugin.cpp)
+target_compile_options(altodfx_echo PRIVATE -Wall -O3)
+
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
 # default, you only need to specify the name of the public NDK library

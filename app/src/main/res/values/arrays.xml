@@ -257,7 +257,7 @@
         <item>libstep_muxer_1212.so</item>
         <item>libsurround_encoder_1401.so</item>
         <item>libsvf_1214.so</item>
-        <item>libSweepVF.so</item>
+        <item>libaltodfx_echo.so</item>
         <item>libtap_autopan.so</item>
         <item>libtap_chorusflanger.so</item>
         <item>libtap_deesser.so</item>

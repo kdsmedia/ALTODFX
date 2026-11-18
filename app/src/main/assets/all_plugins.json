@@ -1018,5 +1018,11 @@
     "id": 9011,
     "plugin": 0,
     "library": "libaltodfx_delay.so"
+  },
+  "11600": {
+    "name": "Echo",
+    "id": 9012,
+    "plugin": 0,
+    "library": "libaltodfx_echo.so"
   }
 }
