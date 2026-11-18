@@ -239,12 +239,16 @@ target). Steps:
   The owner expects the remote to be current at all times; do not leave
   committed work sitting only in the local clone.
 - Remote is `https://github.com/kdsmedia/ALTODFX.git`, branch `main`, public.
-- Push may fail with `403 Permission to kdsmedia/ALTODFX.git denied`. That is a
-  credential problem, not a git problem: the sandbox `GITHUB_TOKEN` is a
-  read-only GitHub App installation token, so it can clone and fetch but not
-  write. `OH_GIT_CREDENTIAL_ACCESS_TOKEN_GITHUB` is unset/invalid. To push,
-  a token with `contents: write` must be supplied; until then, report the block
-  instead of assuming the push succeeded.
+- Push credentials live outside the clone, never in it:
+  `~/.altodfx_push_token` (chmod 600) holds a fine-grained/classic PAT with
+  `repo` scope, and `~/.altodfx_git` is the matching git credential helper.
+  `git config credential.helper` in this clone points at that helper, so a plain
+  `git push origin main` works.
+- The sandbox `GITHUB_TOKEN` is a read-only GitHub App installation token, so it
+  can clone and fetch but not write; do not use it to push. If a push still fails
+  with `403 Permission to kdsmedia/ALTODFX.git denied`, the PAT has been revoked
+  or has expired: report the block instead of assuming the push succeeded, and
+  never commit the token value itself (this repository is public).
 
 ## Signing (release)
 
