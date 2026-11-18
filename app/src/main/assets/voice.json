@@ -1297,5 +1297,73 @@
                 "index": 4
             }
         }
+    },
+  "7700": {
+    "name": "Noise Gate",
+    "controls": {
+      "0": {
+        "InputPort": true,
+        "ControlPort": true,
+        "default": -45.0,
+        "index": 4,
+        "maximum": 0.0,
+        "minimum": -90.0,
+        "name": "Threshold"
+      },
+      "1": {
+        "InputPort": true,
+        "ControlPort": true,
+        "default": 6.0,
+        "index": 5,
+        "maximum": 24.0,
+        "minimum": 0.0,
+        "name": "Hysteresis"
+      },
+      "2": {
+        "InputPort": true,
+        "ControlPort": true,
+        "default": 2.0,
+        "index": 6,
+        "maximum": 100.0,
+        "minimum": 0.1,
+        "name": "Attack"
+      },
+      "3": {
+        "InputPort": true,
+        "ControlPort": true,
+        "default": 50.0,
+        "index": 7,
+        "maximum": 1000.0,
+        "minimum": 0.0,
+        "name": "Hold"
+      },
+      "4": {
+        "InputPort": true,
+        "ControlPort": true,
+        "default": 120.0,
+        "index": 8,
+        "maximum": 2000.0,
+        "minimum": 1.0,
+        "name": "Release"
+      },
+      "5": {
+        "InputPort": true,
+        "ControlPort": true,
+        "default": -80.0,
+        "index": 9,
+        "maximum": 0.0,
+        "minimum": -100.0,
+        "name": "Range"
+      },
+      "6": {
+        "InputPort": true,
+        "ControlPort": true,
+        "default": 1.0,
+        "index": 10,
+        "maximum": 1.0,
+        "minimum": 0.0,
+        "name": "Link"
+      }
     }
+  }
 }

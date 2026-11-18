@@ -158,5 +158,13 @@
       { "name": "Crunch", "values": { "Drive": 0.65, "Tone": 0.6, "Level": 0.7 } },
       { "name": "Lead", "values": { "Drive": 0.9, "Tone": 0.7, "Level": 0.65 } }
     ]
+  },
+  "7700": {
+    "name": "Noise Gate",
+    "presets": [
+      { "name": "Halus", "values": { "Threshold": -50.0, "Hysteresis": 6.0, "Attack": 1.0, "Hold": 30.0, "Release": 80.0, "Range": -60.0, "Link": 1.0 } },
+      { "name": "Sedang", "values": { "Threshold": -45.0, "Hysteresis": 6.0, "Attack": 2.0, "Hold": 50.0, "Release": 120.0, "Range": -80.0, "Link": 1.0 } },
+      { "name": "Kuat", "values": { "Threshold": -38.0, "Hysteresis": 9.0, "Attack": 0.5, "Hold": 80.0, "Release": 200.0, "Range": -100.0, "Link": 1.0 } }
+    ]
   }
 }

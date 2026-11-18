@@ -510,10 +510,10 @@
     "library": "libmultivoice_chorus_1201.so"
   },
   "7700": {
-    "name": "C* Noisegate - Attenuating hum and noise",
-    "id": 2602,
+    "name": "Noise Gate",
+    "id": 9018,
     "plugin": 0,
-    "library": "libNoisegate.so"
+    "library": "libaltodfx_noisegate.so"
   },
   "7900": {
     "name": "LFO Phaser",
