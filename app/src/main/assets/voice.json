@@ -1114,26 +1114,80 @@
             }
         }
     },
-    "3500": {
+    "14100": {
         "name": "Normalizer",
         "controls": {
             "0": {
-                "name": "Target Amplitude",
-                "default": 0,
-                "minimum": 0,
-                "maximum": -12,
-                "index": 0
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.0,
+                "index": 4,
+                "maximum": 24.0,
+                "minimum": -24.0,
+                "name": "Input"
             },
             "1": {
-                "name": "Compression Amount",
-                "default": 0.5,
-                "minimum": 0,
-                "maximum": 1,
-                "index": [
-                    1,
-                    2,
-                    3
-                ]
+                "InputPort": true,
+                "ControlPort": true,
+                "default": -12.0,
+                "index": 5,
+                "maximum": 0.0,
+                "minimum": -36.0,
+                "name": "Target"
+            },
+            "2": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 18.0,
+                "index": 6,
+                "maximum": 30.0,
+                "minimum": 0.0,
+                "name": "Max Gain"
+            },
+            "3": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 10.0,
+                "index": 7,
+                "maximum": 200.0,
+                "minimum": 0.1,
+                "name": "Attack"
+            },
+            "4": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 250.0,
+                "index": 8,
+                "maximum": 3000.0,
+                "minimum": 10.0,
+                "name": "Release"
+            },
+            "5": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": -70.0,
+                "index": 9,
+                "maximum": -20.0,
+                "minimum": -100.0,
+                "name": "Gate"
+            },
+            "6": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.0,
+                "index": 10,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Gate On"
+            },
+            "7": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.0,
+                "index": 11,
+                "maximum": 24.0,
+                "minimum": -24.0,
+                "name": "Out"
             }
         }
     },

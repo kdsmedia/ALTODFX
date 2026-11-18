@@ -1030,5 +1030,11 @@
     "id": 9013,
     "plugin": 0,
     "library": "libaltodfx_reverb.so"
+  },
+  "14100": {
+    "name": "Normalizer",
+    "id": 9014,
+    "plugin": 0,
+    "library": "libaltodfx_normalizer.so"
   }
 }

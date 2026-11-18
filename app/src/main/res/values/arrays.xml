@@ -282,7 +282,7 @@
         <item>libtriple_para_1204.so</item>
         <item>libvalve_1209.so</item>
         <item>libvalve_rect_1405.so</item>
-        <item>libVCO.so</item>
+        <item>libaltodfx_normalizer.so</item>
         <item>libvlevel-ladspa.so</item>
         <item>libvocoder_1337.so</item>
         <item>libvocoder.so</item>

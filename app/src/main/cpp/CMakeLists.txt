@@ -104,6 +104,9 @@ target_compile_options(altodfx_echo PRIVATE -Wall -O3)
 add_library(altodfx_reverb SHARED ReverbPlugin.cpp)
 target_compile_options(altodfx_reverb PRIVATE -Wall -O3)
 
+add_library(altodfx_normalizer SHARED NormalizerPlugin.cpp)
+target_compile_options(altodfx_normalizer PRIVATE -Wall -O3)
+
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
 # default, you only need to specify the name of the public NDK library

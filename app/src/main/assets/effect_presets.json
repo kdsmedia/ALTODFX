@@ -143,12 +143,12 @@
       { "name": "Ambient", "values": { "Room": 1.0, "Decay": 6.0, "Damping": 0.3, "Pre-Delay": 40.0, "Diffusion": 0.9, "Mix": 0.4, "Width": 1.0, "Gain": 1.0 } }
     ]
   },
-  "3500": {
+  "14100": {
     "name": "Normalizer",
     "presets": [
-      { "name": "Halus", "values": { "Target Amplitude": -1.0, "Compression Amount": 0.3 } },
-      { "name": "Sedang", "values": { "Target Amplitude": -3.0, "Compression Amount": 0.5 } },
-      { "name": "Kuat", "values": { "Target Amplitude": -6.0, "Compression Amount": 0.8 } }
+      { "name": "Halus", "values": { "Input": 0.0, "Target": -14.0, "Max Gain": 12.0, "Attack": 20.0, "Release": 400.0, "Gate": -80.0, "Gate On": 0.0, "Out": 0.0 } },
+      { "name": "Sedang", "values": { "Input": 0.0, "Target": -12.0, "Max Gain": 18.0, "Attack": 10.0, "Release": 250.0, "Gate": -70.0, "Gate On": 0.0, "Out": 0.0 } },
+      { "name": "Kuat", "values": { "Input": 0.0, "Target": -9.0, "Max Gain": 24.0, "Attack": 5.0, "Release": 150.0, "Gate": -60.0, "Gate On": 1.0, "Out": 0.0 } }
     ]
   },
   "900": {
