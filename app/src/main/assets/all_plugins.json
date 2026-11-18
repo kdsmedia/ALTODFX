@@ -994,5 +994,11 @@
     "id": 9007,
     "plugin": 0,
     "library": "libaltodfx_flanger.so"
+  },
+  "6800": {
+    "name": "Chorus",
+    "id": 9008,
+    "plugin": 0,
+    "library": "libaltodfx_chorus.so"
   }
 }

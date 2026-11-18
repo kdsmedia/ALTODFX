@@ -87,12 +87,12 @@
       { "name": "Jet", "values": { "Rate": 0.6, "Depth": 1.0, "Feedback": 0.9, "Mix": 0.7, "Center": 0.6, "Stereo": 1.0, "Stages": 1.0, "Level": 1.0 } }
     ]
   },
-  "30500": {
+  "6800": {
     "name": "Chorus",
     "presets": [
-      { "name": "Subtil", "values": { "Level": 0.35, "Delay": 0.01, "Depth": 0.25, "Freq": 0.6 } },
-      { "name": "Klasik", "values": { "Level": 0.5, "Delay": 0.02, "Depth": 0.45, "Freq": 1.0 } },
-      { "name": "Lebar", "values": { "Level": 0.6, "Delay": 0.03, "Depth": 0.7, "Freq": 0.4 } }
+      { "name": "Classic", "values": { "Rate": 0.8, "Depth": 0.65, "Delay": 18.0, "Feedback": 0.0, "Mix": 0.35, "Stereo": 1.0, "Gain": 1.0, "Wave": 0.0 } },
+      { "name": "Wide", "values": { "Rate": 0.4, "Depth": 0.85, "Delay": 25.0, "Feedback": 0.15, "Mix": 0.45, "Stereo": 1.0, "Gain": 1.0, "Wave": 0.0 } },
+      { "name": "Lush", "values": { "Rate": 1.2, "Depth": 0.5, "Delay": 12.0, "Feedback": 0.35, "Mix": 0.5, "Stereo": 1.0, "Gain": 1.0, "Wave": 1.0 } }
     ]
   },
   "5800": {
