@@ -1012,5 +1012,11 @@
     "id": 9010,
     "plugin": 0,
     "library": "libaltodfx_octaver.so"
+  },
+  "10900": {
+    "name": "Delay",
+    "id": 9011,
+    "plugin": 0,
+    "library": "libaltodfx_delay.so"
   }
 }
