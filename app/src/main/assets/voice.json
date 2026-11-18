@@ -446,31 +446,91 @@
                 "InputPort": true,
                 "ControlPort": true,
                 "default": 0,
-                "index": 0,
+                "index": 4,
                 "maximum": 12.0,
                 "minimum": -12.0,
-                "name": "Low",
-                "symbol": "DRYWET"
+                "name": "31 Hz"
             },
             "1": {
                 "InputPort": true,
                 "ControlPort": true,
                 "default": 0,
-                "index": 1,
+                "index": 5,
                 "maximum": 12.0,
                 "minimum": -12.0,
-                "name": "Mid",
-                "symbol": "DRYWET"
+                "name": "62 Hz"
             },
             "2": {
                 "InputPort": true,
                 "ControlPort": true,
                 "default": 0,
-                "index": 2,
+                "index": 6,
                 "maximum": 12.0,
                 "minimum": -12.0,
-                "name": "High",
-                "symbol": "DRYWET"
+                "name": "125 Hz"
+            },
+            "3": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0,
+                "index": 7,
+                "maximum": 12.0,
+                "minimum": -12.0,
+                "name": "250 Hz"
+            },
+            "4": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0,
+                "index": 8,
+                "maximum": 12.0,
+                "minimum": -12.0,
+                "name": "500 Hz"
+            },
+            "5": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0,
+                "index": 9,
+                "maximum": 12.0,
+                "minimum": -12.0,
+                "name": "1 kHz"
+            },
+            "6": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0,
+                "index": 10,
+                "maximum": 12.0,
+                "minimum": -12.0,
+                "name": "2 kHz"
+            },
+            "7": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0,
+                "index": 11,
+                "maximum": 12.0,
+                "minimum": -12.0,
+                "name": "4 kHz"
+            },
+            "8": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0,
+                "index": 12,
+                "maximum": 12.0,
+                "minimum": -12.0,
+                "name": "8 kHz"
+            },
+            "9": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0,
+                "index": 13,
+                "maximum": 12.0,
+                "minimum": -12.0,
+                "name": "16 kHz"
             }
         }
     },

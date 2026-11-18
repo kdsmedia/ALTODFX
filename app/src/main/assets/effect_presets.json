@@ -74,9 +74,9 @@
   "3300": {
     "name": "Equalizer",
     "presets": [
-      { "name": "Flat", "values": { "Low": 0.0, "Mid": 0.0, "High": 0.0 } },
-      { "name": "Bright", "values": { "Low": -1.0, "Mid": 0.0, "High": 3.0 } },
-      { "name": "Warm", "values": { "Low": 3.0, "Mid": 1.0, "High": -1.0 } }
+      { "name": "Flat", "values": { "31 Hz": 0, "62 Hz": 0, "125 Hz": 0, "250 Hz": 0, "500 Hz": 0, "1 kHz": 0, "2 kHz": 0, "4 kHz": 0, "8 kHz": 0, "16 kHz": 0 } },
+      { "name": "Scoop", "values": { "31 Hz": 3, "62 Hz": 2, "125 Hz": -2, "250 Hz": -5, "500 Hz": -4, "1 kHz": 0, "2 kHz": 3, "4 kHz": 4, "8 kHz": 3, "16 kHz": 1 } },
+      { "name": "Lead", "values": { "31 Hz": -3, "62 Hz": -1, "125 Hz": 0, "250 Hz": 2, "500 Hz": 3, "1 kHz": 3, "2 kHz": 3, "4 kHz": 2, "8 kHz": 1, "16 kHz": 0 } }
     ]
   },
   "27700": {

@@ -216,10 +216,10 @@
     "library": "libdivider_1186.so"
   },
   "3300": {
-    "name": "DJ EQ (mono)",
-    "id": 1907,
+    "name": "10-Band Equalizer",
+    "id": 9005,
     "plugin": 0,
-    "library": "libdj_eq_1901.so"
+    "library": "libaltodfx_equalizer.so"
   },
   "3301": {
     "name": "DJ EQ",
