@@ -1006,5 +1006,11 @@
     "id": 9009,
     "plugin": 0,
     "library": "libaltodfx_tremolo.so"
+  },
+  "8900": {
+    "name": "Octaver",
+    "id": 9010,
+    "plugin": 0,
+    "library": "libaltodfx_octaver.so"
   }
 }

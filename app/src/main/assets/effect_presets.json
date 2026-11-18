@@ -111,12 +111,12 @@
       { "name": "Random", "values": { "Rate": 8.0, "Depth": 0.8, "Bias": 0.0, "Stereo": 1.0, "Gain": 1.0, "Wave": 1.0 } }
     ]
   },
-  "27600": {
+  "8900": {
     "name": "Octaver",
     "presets": [
-      { "name": "Halus", "values": { "DIRECT": 0.8, "OCTAVE1": 0.3, "OCTAVE2": 0.0 } },
-      { "name": "Oktaf Bawah", "values": { "DIRECT": 0.5, "OCTAVE1": 0.8, "OCTAVE2": 0.2 } },
-      { "name": "Organ", "values": { "DIRECT": 0.4, "OCTAVE1": 0.7, "OCTAVE2": 0.6 } }
+      { "name": "Sub", "values": { "Sub 1": 0.8, "Sub 2": 0.0, "Upper": 0.0, "Dry": 0.5, "Sens": 0.4, "Gain": 1.0 } },
+      { "name": "Organ", "values": { "Sub 1": 0.6, "Sub 2": 0.6, "Upper": 0.2, "Dry": 0.4, "Sens": 0.5, "Gain": 1.0 } },
+      { "name": "Octave Up", "values": { "Sub 1": 0.0, "Sub 2": 0.0, "Upper": 0.7, "Dry": 0.6, "Sens": 0.5, "Gain": 1.0 } }
     ]
   },
   "30900": {

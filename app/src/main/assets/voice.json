@@ -824,38 +824,62 @@
             }
         }
     },
-    "27600": {
+    "8900": {
         "name": "Octaver",
         "controls": {
             "0": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.5",
-                "index": 2,
-                "maximum": "1.0",
-                "minimum": "0.0",
-                "name": "DIRECT",
-                "symbol": "DIRECT"
+                "default": 0.65,
+                "index": 4,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Sub 1"
             },
             "1": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.5",
-                "index": 3,
-                "maximum": "1.0",
-                "minimum": "0.0",
-                "name": "OCTAVE1",
-                "symbol": "OCTAVE1"
+                "default": 0.0,
+                "index": 5,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Sub 2"
             },
             "2": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.5",
-                "index": 4,
-                "maximum": "1.0",
-                "minimum": "0.0",
-                "name": "OCTAVE2",
-                "symbol": "OCTAVE2"
+                "default": 0.0,
+                "index": 6,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Upper"
+            },
+            "3": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.8,
+                "index": 7,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Dry"
+            },
+            "4": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.35,
+                "index": 8,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Sens"
+            },
+            "5": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 1.0,
+                "index": 9,
+                "maximum": 2.0,
+                "minimum": 0.0,
+                "name": "Gain"
             }
         }
     },
