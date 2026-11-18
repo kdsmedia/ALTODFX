@@ -23,12 +23,12 @@
       { "name": "Boost", "values": { "GAIN": 0.2, "TONE": 0.6, "VOLUME": 0.9 } }
     ]
   },
-  "32500": {
+  "1400": {
     "name": "Distortion",
     "presets": [
-      { "name": "Rock", "values": { "TONE": 0.5, "DRIVE": 8.0, "PREGAIN": 0.0, "GAIN": 0.0, "HIGHGAIN": 0.3 } },
-      { "name": "Hard", "values": { "TONE": 0.45, "DRIVE": 14.0, "PREGAIN": 2.0, "GAIN": 2.0, "HIGHGAIN": 0.6 } },
-      { "name": "Metal", "values": { "TONE": 0.4, "DRIVE": 19.0, "PREGAIN": 4.0, "GAIN": 4.0, "HIGHGAIN": 0.9 } }
+      { "name": "Rock", "values": { "Drive": 0.45, "Tone": 0.55, "Level": 0.7, "Bass": 0.5, "Presence": 0.5, "Hardness": 0.55 } },
+      { "name": "Hard", "values": { "Drive": 0.65, "Tone": 0.45, "Level": 0.7, "Bass": 0.45, "Presence": 0.6, "Hardness": 0.75 } },
+      { "name": "Metal", "values": { "Drive": 0.85, "Tone": 0.4, "Level": 0.72, "Bass": 0.4, "Presence": 0.7, "Hardness": 0.9 } }
     ]
   },
   "31400": {

@@ -964,5 +964,11 @@
     "id": 9001,
     "plugin": 0,
     "library": "libaltodfx_autowah.so"
+  },
+  "1400": {
+    "name": "Distortion",
+    "id": 9002,
+    "plugin": 0,
+    "library": "libaltodfx_distortion.so"
   }
 }

@@ -155,7 +155,7 @@
         <item>libchebstortion_1430.so</item>
         <item>libChorus.so</item>
         <item>libaltodfx_autowah.so</item>
-        <item>libClip.so</item>
+        <item>libaltodfx_distortion.so</item>
         <item>libcomb_1190.so</item>
         <item>libcomb_1887.so</item>
         <item>libcomb_splitter_1411.so</item>

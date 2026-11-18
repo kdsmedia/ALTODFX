@@ -148,59 +148,62 @@
             }
         }
     },
-    "32500": {
+    "1400": {
         "name": "Distortion",
         "controls": {
             "0": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.5",
-                "index": 0,
-                "maximum": "1.0",
-                "minimum": "0.0",
-                "name": "TONE",
-                "symbol": "TONE"
+                "default": 0.7,
+                "index": 4,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Drive"
             },
             "1": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "10.5",
-                "index": 1,
-                "maximum": "20.0",
-                "minimum": "1.0",
-                "name": "DRIVE",
-                "symbol": "DRIVE"
+                "default": 0.6,
+                "index": 5,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Tone"
             },
             "2": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.0",
-                "index": 2,
-                "maximum": "20.0",
-                "minimum": "-20.0",
-                "name": "PREGAIN",
-                "symbol": "PREGAIN"
+                "default": 0.65,
+                "index": 6,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Level"
             },
             "3": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.0",
-                "index": 3,
-                "maximum": "20.0",
-                "minimum": "-20.0",
-                "name": "GAIN",
-                "symbol": "GAIN1"
+                "default": 0.5,
+                "index": 7,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Bass"
             },
-            "6": {
+            "4": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.0",
-                "index": 6,
-                "maximum": "1.0",
-                "minimum": "0.0",
-                "name": "HIGHGAIN",
-                "portProperty": "http://lv2plug.in/ns/lv2core#toggled",
-                "symbol": "HIGHGAIN"
+                "default": 0.5,
+                "index": 8,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Presence"
+            },
+            "5": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.7,
+                "index": 9,
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Hardness"
             }
         }
     },
