@@ -143,7 +143,7 @@
     <string-array name="ladspa_plugins">
         <item>libalias_1407.so</item>
         <item>liballpass_1895.so</item>
-        <item>libamp_1181.so</item>
+        <item>libaltodfx_amplifier.so</item>
         <item>libam_pitchshift_1433.so</item>
         <item>libAmp.so</item>
         <item>libautotalent.so</item>
@@ -172,7 +172,7 @@
         <item>libdelay_1898.so</item>
         <item>libdelayorama_1402.so</item>
         <item>libdiode_1185.so</item>
-        <item>libdistortion.so</item>
+        <item>libaltodfx_distortionplus.so</item>
         <item>libdivider_1186.so</item>
         <item>libdj_eq_1901.so</item>
         <item>libdj_flanger_1438.so</item>

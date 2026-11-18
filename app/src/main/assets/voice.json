@@ -338,107 +338,166 @@
             }
         }
     },
-    "24900": {
+    "3100": {
         "name": "Distortion+",
         "controls": {
             "0": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "1.0",
-                "index": 2,
-                "maximum": "1.0",
-                "minimum": "0.0",
-                "name": "BYPASS",
-                "symbol": "BYPASS"
+                "default": 0.0,
+                "index": 4
+                ,"maximum": 24.0,
+                "minimum": -24.0,
+                "name": "Input Gain"
             },
             "1": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.5",
-                "index": 3,
-                "maximum": "1.0",
-                "minimum": "0.0",
-                "name": "DISTORTION",
-                "symbol": "DISTORTION"
+                "default": 0.65,
+                "index": 5
+                ,"maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Drive"
             },
             "2": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.5",
-                "index": 4,
-                "maximum": "1.0",
-                "minimum": "0.0",
-                "name": "OUTPUT",
-                "symbol": "OUTPUT"
+                "default": 0.0,
+                "index": 6
+                ,"maximum": 12.0,
+                "minimum": -12.0,
+                "name": "Bass"
             },
             "3": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.0",
-                "index": 5,
-                "maximum": "1.0",
-                "minimum": "0.0",
-                "name": "BASSBOOST",
-                "symbol": "BASSBOOST"
+                "default": 0.0,
+                "index": 7
+                ,"maximum": 12.0,
+                "minimum": -12.0,
+                "name": "Mid"
+            },
+            "4": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.0,
+                "index": 8
+                ,"maximum": 12.0,
+                "minimum": -12.0,
+                "name": "Treble"
+            },
+            "5": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.5,
+                "index": 9
+                ,"maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Presence"
+            },
+            "6": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0,
+                "index": 10
+                ,"maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Hard Clip"
+            },
+            "7": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": -6.0,
+                "index": 11
+                ,"maximum": 12.0,
+                "minimum": -24.0,
+                "name": "Output"
             }
         }
     },
-    "32400": {
+    "200": {
         "name": "Amplifier",
         "controls": {
+            "0": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.35,
+                "index": 4
+                ,"maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Preamp"
+            },
+            "1": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.75,
+                "index": 5
+                ,"maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Master"
+            },
             "2": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "20.0",
-                "index": 2,
-                "maximum": "100.0",
-                "minimum": "1.0",
-                "name": "Distortion",
-                "symbol": "Distortion"
+                "default": 0.5,
+                "index": 6
+                ,"maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Bass"
             },
             "3": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "0.25",
-                "index": 3,
-                "maximum": "1.0",
-                "minimum": "0.01",
-                "name": "Drive",
-                "symbol": "Drive"
+                "default": 0.5,
+                "index": 7
+                ,"maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Middle"
+            },
+            "4": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.5,
+                "index": 8
+                ,"maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Treble"
+            },
+            "5": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.5,
+                "index": 9
+                ,"maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Presence"
+            },
+            "6": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.35,
+                "index": 10
+                ,"maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Resonance"
+            },
+            "7": {
+                "InputPort": true,
+                "ControlPort": true,
+                "default": 0.8,
+                "index": 11
+                ,"maximum": 1.0,
+                "minimum": 0.0,
+                "name": "Output"
             },
             "8": {
                 "InputPort": true,
                 "ControlPort": true,
-                "default": "5.0",
-                "index": 8,
-                "maximum": "10.0",
-                "minimum": "0.0",
-                "name": "Presence",
-                "symbol": "Presence"
-            },
-            "9": {
-                "InputPort": true,
-                "ControlPort": true,
                 "default": 0,
-                "index": 9,
-                "maximum": 18,
-                "minimum": 0,
-                "name": "Model",
-                "portProperty": "http://lv2plug.in/ns/lv2core#enumeration",
-                "scalePoint": "_:n9b565a7eacba47e48628b74fdc44504bb29",
-                "symbol": "model"
-            },
-            "10": {
-                "InputPort": true,
-                "ControlPort": true,
-                "default": 1,
-                "index": 10,
-                "maximum": 26,
-                "minimum": 0,
-                "name": "Tonestack Model",
-                "portProperty": "http://lv2plug.in/ns/lv2core#enumeration",
-                "scalePoint": "_:n9b565a7eacba47e48628b74fdc44504bb57",
-                "symbol": "t_model"
+                "index": 12
+                ,"maximum": 2.0,
+                "minimum": 0.0,
+                "name": "Mode"
             }
         }
     },

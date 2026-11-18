@@ -47,20 +47,20 @@
       { "name": "Wall", "values": { "Sustain": 1.0, "Tone": 0.4, "Volume": 0.6, "Bass": 0.8, "Treble": 0.35 } }
     ]
   },
-  "24900": {
+  "3100": {
     "name": "Distortion+",
     "presets": [
-      { "name": "Klasik", "values": { "DISTORTION": 0.5, "OUTPUT": 0.5, "BASSBOOST": 0.0 } },
-      { "name": "Tajam", "values": { "DISTORTION": 0.8, "OUTPUT": 0.45, "BASSBOOST": 0.0 } },
-      { "name": "Tebal", "values": { "DISTORTION": 0.6, "OUTPUT": 0.5, "BASSBOOST": 1.0 } }
+      { "name": "Klasik", "values": { "Input Gain": 0.0, "Drive": 0.5, "Bass": 0.0, "Mid": 0.0, "Treble": 0.0, "Presence": 0.5, "Hard Clip": 0.0, "Output": -6.0 } },
+      { "name": "Tajam", "values": { "Input Gain": 0.0, "Drive": 0.8, "Bass": 0.0, "Mid": 2.0, "Treble": 4.0, "Presence": 0.7, "Hard Clip": 1.0, "Output": -6.6 } },
+      { "name": "Tebal", "values": { "Input Gain": 0.0, "Drive": 0.6, "Bass": 12.0, "Mid": -2.0, "Treble": 0.0, "Presence": 0.4, "Hard Clip": 0.0, "Output": -6.0 } }
     ]
   },
-  "32400": {
+  "200": {
     "name": "Amplifier",
     "presets": [
-      { "name": "Clean", "values": { "Distortion": 5.0, "Drive": 0.15, "Presence": 5.0, "Model": 0.0, "Tonestack Model": 1.0 } },
-      { "name": "Crunch", "values": { "Distortion": 35.0, "Drive": 0.45, "Presence": 5.0, "Model": 3.0, "Tonestack Model": 4.0 } },
-      { "name": "Lead", "values": { "Distortion": 70.0, "Drive": 0.8, "Presence": 7.0, "Model": 5.0, "Tonestack Model": 5.0 } }
+      { "name": "Clean", "values": { "Preamp": 0.15, "Master": 0.5, "Bass": 0.45, "Middle": 0.5, "Treble": 0.6, "Presence": 0.5, "Resonance": 0.35, "Output": 0.8, "Mode": 0 } },
+      { "name": "Crunch", "values": { "Preamp": 0.45, "Master": 0.6, "Bass": 0.6, "Middle": 0.45, "Treble": 0.55, "Presence": 0.5, "Resonance": 0.4, "Output": 0.8, "Mode": 1 } },
+      { "name": "Lead", "values": { "Preamp": 0.8, "Master": 0.7, "Bass": 0.65, "Middle": 0.5, "Treble": 0.6, "Presence": 0.7, "Resonance": 0.45, "Output": 0.8, "Mode": 2 } }
     ]
   },
   "5500": {

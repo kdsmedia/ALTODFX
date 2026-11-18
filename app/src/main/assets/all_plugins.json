@@ -1042,5 +1042,17 @@
     "id": 9015,
     "plugin": 0,
     "library": "libaltodfx_compressor.so"
+  },
+  "3100": {
+    "name": "Distortion+",
+    "id": 9016,
+    "plugin": 0,
+    "library": "libaltodfx_distortionplus.so"
+  },
+  "200": {
+    "name": "Amplifier",
+    "id": 9017,
+    "plugin": 0,
+    "library": "libaltodfx_amplifier.so"
   }
 }
